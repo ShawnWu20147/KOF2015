@@ -33,7 +33,7 @@ public class KOF2015_Client extends JFrame{
 	
 	public KOF2015_Client(){
 		setSize(400,100);
-		setTitle("拳皇2015---作者:武翔宇 && 席胜渠");
+		setTitle("拳皇2015---作者:武翔宇 && 席圣渠");
 		setResizable(false);
 		setLocationRelativeTo(null);
 		

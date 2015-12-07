@@ -213,13 +213,13 @@ public class ClientOneGame implements Runnable{
 			
 			
 			
-			while (!other_conn);
+			while (!other_conn) Thread.currentThread().sleep(20);
 			
 			System.out.println("conn other!");
 			
 			new Thread(new Show_OptionPane("开始选牌", "已与对手["+challenger+"]连接")).start();
 			
-			while (!setup_choose_finish);
+			while (!setup_choose_finish) Thread.currentThread().sleep(20);
 			
 			
 			//jframe.show
@@ -239,32 +239,24 @@ public class ClientOneGame implements Runnable{
 			
 			
 			for (int wait=0;wait<6;wait++){
-				jf.setEnabled(false);
-				while (!ready_to_select);
+				while (!ready_to_select) Thread.currentThread().sleep(20);
 				
 				ready_to_select=false;
 				
-				//sp.change()
-						
-				jf.setEnabled(true);
-				
-				
-				
 				sp.addTexttoOpp(givePanelOpp);
 				sp.addTexttoMe(givePanelMe);
-				
-				
 				sp.refreshAccordingToCF(acf);
-
 				sp.repaint();
 				
 				
 				// now its my turn to select one
-				while (!select_over);
+				while (!select_over) Thread.currentThread().sleep(20);
 				
 				select_over=false;
 				
 			}
+			
+			//following should be the 布阵
 			
 			
 			

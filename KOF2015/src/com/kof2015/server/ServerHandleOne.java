@@ -59,6 +59,7 @@ public class ServerHandleOne implements Runnable {
 		public void run() {
 			try {
 				while (true){
+					Thread.currentThread().sleep(20);
 					Message msg=(Message) ois1.readObject();
 					msg.from=1;
 					msg_list.add(msg);
@@ -242,7 +243,7 @@ public class ServerHandleOne implements Runnable {
 					
 					oos1.writeUnshared(msg1);
 					oos1.reset();
-					while(!p1_sel_over);
+					while(!p1_sel_over) Thread.currentThread().sleep(20);
 					p1_sel_over=false;
 					
 					Message msg2=new Message(2);
@@ -256,7 +257,7 @@ public class ServerHandleOne implements Runnable {
 					
 					oos2.writeUnshared(msg2);
 					oos2.reset();
-					while (!p2_sel_over);
+					while (!p2_sel_over) Thread.currentThread().sleep(20);
 					p2_sel_over=false;
 
 				}
@@ -276,7 +277,7 @@ public class ServerHandleOne implements Runnable {
 					
 					oos2.writeUnshared(msg2);
 					oos2.reset();
-					while(!p2_sel_over);
+					while(!p2_sel_over) Thread.currentThread().sleep(20);
 					p2_sel_over=false;
 					
 					Message msg1=new Message(2);
@@ -291,7 +292,7 @@ public class ServerHandleOne implements Runnable {
 					
 					oos1.writeUnshared(msg1);
 					oos1.reset();
-					while (!p1_sel_over);
+					while (!p1_sel_over) Thread.currentThread().sleep(20);
 					p1_sel_over=false;
 					
 
