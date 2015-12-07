@@ -3,6 +3,7 @@ package com.kof2015.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -55,7 +56,9 @@ public class SelectOnePeople extends JPanel {
 		
 		select=new JButton("选择");
 		intro=new JButton("简介");
+		
 		ImageIcon image = new ImageIcon("img/battler/"+myid+".jpg"); 
+		
 		jl_pic=new JLabel(image);
 		
 		
@@ -67,6 +70,7 @@ public class SelectOnePeople extends JPanel {
 				isme=0;
 			switch(isme){
 			case 1:
+				
 				jl_pic.setBorder(BorderFactory.createEtchedBorder(Color.RED, Color.RED));
 				break;
 			case 0:
@@ -75,6 +79,9 @@ public class SelectOnePeople extends JPanel {
 				break;
 			}
 			
+		}
+		else{
+			jl_pic.setBorder(BorderFactory.createEtchedBorder(new Color(1,2,3,0),new Color(1,2,3,0)));
 		}
 		info=cf.fi.toString();
 		
@@ -92,7 +99,9 @@ public class SelectOnePeople extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				if (selected){
 					//it means we have chosen it, but not want to cancel
-					jl_pic.setBorder(null);
+					//jl_pic.setBorder(null);
+					jl_pic.setBorder(BorderFactory.createEtchedBorder(new Color(1,2,3,0),new Color(1,2,3,0)));
+					
 					
 					selected=false;
 					select.setText("选择");
@@ -153,7 +162,41 @@ public class SelectOnePeople extends JPanel {
 		add(nj);
 	}
 	
+	public void refresh(ChooseFighter cf){
+		
+		selected=false;
+		
+		select.setText("选择");
+		
+		already=cf.selected;	//是否已经被别人选了
+		
+		if (already){
+			System.out.println("选择者是:"+cf.who_select+"   我是:"+who_am_i);
+			who_sel=cf.who_select;
+			
+			int isme=1;
+			if (who_sel!=who_am_i)
+				isme=0;
+			
+			switch(isme){
+			case 1:
+				jl_pic.setBorder(BorderFactory.createEtchedBorder(Color.RED, Color.RED));
+				break;
+			case 0:
+				jl_pic.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
+				
+				break;
+			}
+			
+		}
+		else{
+			jl_pic.setBorder(BorderFactory.createEtchedBorder(new Color(1,2,3,0),new Color(1,2,3,0)));
+		}
+		
+	}
+	
 	public static void main(String[] args){
+		
 		JFrame jf=new JFrame();
 		jf.setSize(600, 300);
 		jf.setResizable(false);

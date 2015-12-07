@@ -55,7 +55,7 @@ public class KOF2015_Client extends JFrame{
 		JLabel jl_server=new JLabel("服务器地址");
 		JLabel jl_nickname=new JLabel("用户昵称");
 		final JTextField jtf_server=new JTextField("114.212.82.39");
-		final JTextField jtf_nickname=new JTextField("昂戳");
+		final JTextField jtf_nickname=new JTextField("abc");
 		
 		
 		JPanel jt=new JPanel();
@@ -83,7 +83,7 @@ public class KOF2015_Client extends JFrame{
 				
 				try {
 					
-					OneGame og=new OneGame(KOF2015_Client.this,servers,nickname);
+					ClientOneGame og=new ClientOneGame(KOF2015_Client.this,servers,nickname);
 					Thread t=new Thread(og);
 					t.start();		
 					KOF2015_Client.this.setVisible(false);	

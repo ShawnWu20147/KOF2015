@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.common.Message;
@@ -22,11 +23,11 @@ public class KOF2015 {
 	DBHelper db1 = null;
 	ResultSet ret = null;
 	
-	HashSet<FighterInfo> all_fighters;
+	ArrayList<FighterInfo> all_fighters;
 	
 	public KOF2015() throws IOException, InterruptedException, ClassNotFoundException{
 		db1 = new DBHelper();//create DBHelper
-		all_fighters=new HashSet<FighterInfo>();
+		all_fighters=new ArrayList<FighterInfo>();
 		load_all_fighters();
 		System.out.println("---load all fighters succ, start working");
 		
@@ -59,16 +60,16 @@ public class KOF2015 {
 			msg1.s_info2=p2.msg;
 			msg1.i_info1=1;
 			
-			oos1.writeObject(msg1);
+			oos1.writeUnshared(msg1);
 			
 			Message msg2=new Message(0);
 			msg2.s_info1=p1.msg;
 			msg2.s_info2=p2.msg;
 			msg2.i_info1=2;
 			
-			oos2.writeObject(msg2);
+			oos2.writeUnshared(msg2);
 			
-			HandleOne ho=new HandleOne(ois1, ois2, oos1, oos2,p1.msg,p2.msg);
+			ServerHandleOne ho=new ServerHandleOne(all_fighters,ois1, ois2, oos1, oos2,p1.msg,p2.msg);
 			new Thread(ho).start();
 
 			
