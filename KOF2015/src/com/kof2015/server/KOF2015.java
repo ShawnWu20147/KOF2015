@@ -54,16 +54,16 @@ public class KOF2015 {
 
 			
 			
-			Message msg1=new Message();
-			msg1.info1=p1.msg;
-			msg1.info2=p2.msg;
+			Message msg1=new Message(0);
+			msg1.s_info1=p1.msg;
+			msg1.s_info2=p2.msg;
 			msg1.i_info1=1;
 			
 			oos1.writeObject(msg1);
 			
-			Message msg2=new Message();
-			msg2.info1=p1.msg;
-			msg2.info2=p2.msg;
+			Message msg2=new Message(0);
+			msg2.s_info1=p1.msg;
+			msg2.s_info2=p2.msg;
 			msg2.i_info1=2;
 			
 			oos2.writeObject(msg2);
@@ -110,6 +110,7 @@ public class KOF2015 {
 						,base_attack_anger,base_attacked_anger,base_power_anger,base_powered_anger,description,skill_name,skill_description
 						,skill_type,skill_ratio);
 				
+				//if (id==1) System.out.println(fi.toStringHtml());
 				all_fighters.add(fi);
 				
 			}

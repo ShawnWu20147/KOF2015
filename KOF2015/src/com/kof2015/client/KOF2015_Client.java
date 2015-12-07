@@ -27,33 +27,8 @@ import com.kof2015.ui.BattlePanel;
 
 public class KOF2015_Client extends JFrame{
 	
-	int what_i;
-	
-	
-	class Wait_for_Over implements Runnable{
-		SelectPanel sp;
-		JFrame jf;
-		public Wait_for_Over(SelectPanel sp,JFrame jf){
-			this.sp=sp;
-			this.jf=jf;
-		}
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while (sp.over==0){
-				
-			};
-			if (sp.over==-1){
-				jf.setVisible(false);
-				jf.dispose();
-				
-				KOF2015_Client.this.setVisible(true);
-			}
-			else{
-				// go to 安排窗口
-			}
-		}
+	public void showIt(){
+		setVisible(true);
 	}
 	
 	public KOF2015_Client(){
@@ -62,23 +37,21 @@ public class KOF2015_Client extends JFrame{
 		setResizable(false);
 		setLocationRelativeTo(null);
 		
-		/*
 		this.addWindowListener(new WindowAdapter(){
 			  public void windowClosing(WindowEvent e) {
-			      int option=JOptionPane.showConfirmDialog(KOF2015_Client.this, "确定退出游戏?", "提示 ",JOptionPane.YES_NO_OPTION); 
+			      /*
+				  int option=JOptionPane.showConfirmDialog(KOF2015_Client.this, "确定退出游戏?", "提示 ",JOptionPane.YES_NO_OPTION); 
 			      if(option==JOptionPane.YES_OPTION){
 			     // if(e.getWindow()   ==   MainFrame.this){   
 			          System.exit(0); 
 			      } 
 			      else{
 			    	  KOF2015_Client.this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-			      }
+			      }*/ 
+				  System.exit(0);
 			   }
 			  });
-			  
-			  */
-		
-		
+
 		JLabel jl_server=new JLabel("服务器地址");
 		JLabel jl_nickname=new JLabel("用户昵称");
 		final JTextField jtf_server=new JTextField("114.212.82.39");
@@ -110,63 +83,26 @@ public class KOF2015_Client extends JFrame{
 				
 				try {
 					
-					Socket ss=new Socket(servers,9798);
-					OutputStream os=ss.getOutputStream();
-					final ObjectOutputStream oos=new ObjectOutputStream(os);
-					
-					InputStream is=ss.getInputStream();
-					final ObjectInputStream ois=new ObjectInputStream(is);
-					
-					Message msg=new Message(0);
-					msg.msg=nickname;
-					oos.writeObject(msg);
-					oos.flush();
+					OneGame og=new OneGame(KOF2015_Client.this,servers,nickname);
+					Thread t=new Thread(og);
+					t.start();		
+					KOF2015_Client.this.setVisible(false);	
 					
 					
-					JOptionPane.showMessageDialog(null, "正在等待别的玩家", "已连接战网", JOptionPane.INFORMATION_MESSAGE);
-					Message m=(Message) ois.readObject();
-					what_i=m.i_info1;
-					String others=(m.i_info1==1)?m.info2:m.info1;
-					JOptionPane.showMessageDialog(null, "准备开始选牌", "已连接上:"+others, JOptionPane.INFORMATION_MESSAGE);
-					
-					
-					setVisible(false);
-					
-					final JFrame frame = new JFrame();
-					frame.setSize(900, 600);
-					frame.setLocationRelativeTo(null);
-					frame.setResizable(false);
-					
-					SelectPanel sp=new SelectPanel(ois, oos);
-					frame.add(sp);
-					//frame.pack();
-					frame.setVisible(true);
-					
-					new Thread(new Wait_for_Over(sp,frame)).start();
-					
-					
-					
-					
-					
-					
-					
+					//t.join();
 					
 					
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(null, "遇到一个问题", "错误", JOptionPane.INFORMATION_MESSAGE);
-					
-					
 				} 
-				
-				
-				
 			}
 		});
 		
 		
-		
-		
 		setVisible(true);
+		
+		
+		
 	}
 	
 	public static void main(String[] args){

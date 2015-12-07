@@ -6,9 +6,9 @@ public class Message implements Serializable{
 	public int type;
 	public String msg;
 	
-	public String info1;
-	public String info2;
-	public String info3;
+	public String s_info1;
+	public String s_info2;
+	public String s_info3;
 	
 	public int i_info1;
 	public int i_info2;
@@ -21,11 +21,17 @@ public class Message implements Serializable{
 	//type=1 force quit
 	
 	public Message(){
-		type=0;
+		type=-1;
+		//just a message
 	}
 	
 	public Message(int type){
 		this.type=type;
+	}
+	
+	public Message(int type,String msg){
+		this.type=type;
+		this.msg=msg;
 	}
 
 }

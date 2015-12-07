@@ -123,6 +123,8 @@ public class HandleOne implements Runnable {
 			oos1.writeObject(msg);
 			oos2.writeObject(msg);
 			
+			
+			
 			while (true){
 				
 			}
