@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import com.common.FighterInfo;
 import com.common.Message;
 
 

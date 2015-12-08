@@ -1,11 +1,17 @@
-package com.kof2015.server;
+package com.common;
 
 public class FighterInstance {
+	
+	public int max_hp;
+	
+	public FighterInfo base;
 	
 	/**
 	 * 当前的生命值。
 	 */
 	public int hp;
+	
+	public boolean isDead;
 	
 	/**
 	 * 当前的怒气值。
@@ -22,7 +28,15 @@ public class FighterInstance {
 	 * @param ratio 按照星级提升的倍率。
 	 */
 	public FighterInstance(FighterInfo base, double ratio) {
+		this.base=base;
 		
+		max_hp=base.base_hp;
+		
+		hp=base.base_hp;
+		
+		anger=0;
+		
+		isDead=false;
 	}
 	
 	/**

@@ -19,6 +19,9 @@ public class Message implements Serializable{
 	public int i_info2;
 	public int i_info3;
 	
+	public FighterInfo []fi;
+	
+	public int []who_attacked;
 	
 	public int from;
 	
@@ -40,6 +43,35 @@ public class Message implements Serializable{
 		// i_info_2 f1_index
 		// i_info_3 f2_index
 		// identifier who selects
+	
+	
+	//type=3 servers send 8 fighters to each
+		// fi[] are used
+	
+		// if received by server, that means clients format over and tell server the result
+		// fi[] are used
+	
+	
+	
+	//type=4 battles
+	
+		//s_info1 used for print logs!
+	
+		//if received by clients
+		//i_info_1  [-1 starts] [0 actions-bisha] [1 actions-normal attack] [2 tell result]
+		//fi[]  0~5 belongs to P1, 6~11 belongs to P2
+	
+	
+		//if received by servers
+		//from   1 or 2
+		//i_info_1	[0 actions-bisha]	[1 actions-normal attack]
+		//i_info_2	who attacks (USING index)
+		//i_info_3  if it is normal attack, who is attacked (USING index)
+		// who attacked[]  if it is bisha, who are attacked
+		//对于雅典娜等特殊角色,其实并不需要提供who attacked 但是仍然留着
+	
+	
+	
 	
 	public ChooseFighter[] cf;
 	

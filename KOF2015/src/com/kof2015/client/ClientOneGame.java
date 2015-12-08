@@ -8,12 +8,15 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import com.common.FighterInfo;
 import com.common.Message;
 
 
@@ -33,14 +36,19 @@ public class ClientOneGame implements Runnable{
 	
 	volatile Vector<Message> msg_list;
 	
-	JFrame jf;
+	JFrame jf_login;
+	
+	
+	JFrame jf_select;
+	
+	JFrame jf_formation;
 	
 	SelectPanel sp;
 	
 	int round;	//add
 	
 	public ClientOneGame(JFrame jf,String serverIp,String nickName){
-		this.jf=jf;
+		this.jf_login=jf;
 		this.serverIp=serverIp;
 		this.nickName=nickName;
 		
@@ -59,7 +67,7 @@ public class ClientOneGame implements Runnable{
 		}
 		@Override
 		public void run() {
-			JOptionPane.showMessageDialog(jf, con, cap, JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(jf_login, con, cap, JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	}
@@ -114,7 +122,7 @@ public class ClientOneGame implements Runnable{
 							givePanelOpp=msg.s_info2;
 							//even it is over, we should tell the player
 							
-							one_choose_me();//add
+							one_choose_over();//add
 							
 						}
 						else{
@@ -142,6 +150,12 @@ public class ClientOneGame implements Runnable{
 						}
 						
 						break;
+					case 3:
+						FighterInfo []fi=msg.fi;
+						begin_formation(fi);
+						break;
+					case 4:
+						//the battle!!!!
 						
 							
 					}
@@ -149,6 +163,7 @@ public class ClientOneGame implements Runnable{
 			}
 			
 		}
+
 		
 	}
 	
@@ -186,18 +201,32 @@ public class ClientOneGame implements Runnable{
 		new Thread(new Show_OptionPane("开始选牌", "已与对手["+challenger+"]连接")).start();		
 	}
 	
+	public void begin_formation(FighterInfo[] fi) {
+		jf_formation = new JFrame();
+		FormationPanel testObject = new FormationPanel(this,challenger);
+		
+
+		jf_formation.setTitle("【"+nickName+"】" +"布阵");
+		jf_formation.add(testObject);
+		jf_formation.pack();
+		jf_formation.setVisible(true);
+		
+		testObject.passingCandidates( fi );
+		
+	}
+
 	public void setup_choose_finish(){
-		JFrame jf=new JFrame();
+		jf_select=new JFrame();
 		//jf.setLocationRelativeTo(null);
-		jf.setSize(1200, 800);
-		jf.setResizable(false);
-		jf.setTitle(nickName+":选人阶段,首先双方各选1人,然后双方轮流各选2人,直到结束");
+		jf_select.setSize(1200, 800);
+		jf_select.setResizable(false);
+		jf_select.setTitle(nickName+":选人阶段,首先双方各选1人,然后双方轮流各选2人,直到结束");
 		
 		sp=new SelectPanel(what_i,this,acf);
 		sp.addTexttoMe("准备开始格斗家挑选\n"+givePanelMe);
 		
-		jf.add(sp);
-		jf.setVisible(true);
+		jf_select.add(sp);
+		jf_select.setVisible(true);
 	}
 	
 	public void one_choose_me(){
@@ -206,6 +235,28 @@ public class ClientOneGame implements Runnable{
 		sp.refreshAccordingToCF(acf);
 		sp.repaint();
 	}
+	
+	public void one_choose_over(){
+		sp.addTexttoOpp(givePanelOpp);
+		sp.addTexttoMe(givePanelMe);
+		sp.refreshAccordingToCF(acf);
+		sp.repaint();
+		sp.addTexttoMe("倒计时5秒后将自动关闭此页面!!!!");
+		
+		Timer tm=new Timer();
+		TimerTask tt=new TimerTask() { 
+			@Override
+            public void run() {
+				System.out.println("here!");
+				jf_select.setVisible(false);
+				jf_select.dispose();
+            }
+		};
+		tm.schedule(tt, 5000);
+		
+
+	}	
+	
 	
 	
 	@Override
@@ -250,10 +301,10 @@ public class ClientOneGame implements Runnable{
 	public void verify_confirm(int []sel,int count){
 		if(count!=canSel){
 			if (count<canSel){
-				JOptionPane.showMessageDialog(jf, "选择的格斗家过少!", "提示", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(jf_login, "选择的格斗家过少!", "提示", JOptionPane.INFORMATION_MESSAGE);
 			}
 			else{
-				JOptionPane.showMessageDialog(jf, "选择的格斗家过多!", "提示", JOptionPane.INFORMATION_MESSAGE);	
+				JOptionPane.showMessageDialog(jf_login, "选择的格斗家过多!", "提示", JOptionPane.INFORMATION_MESSAGE);	
 			}
 			return;
 		}
@@ -281,6 +332,17 @@ public class ClientOneGame implements Runnable{
 		
 		
 		
+		
+	}
+
+	public void formationover(FighterInfo []fi) {
+		Message msg=new Message(3);
+		msg.fi=fi;
+		try {
+			oos.writeUnshared(msg);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

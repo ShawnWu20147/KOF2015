@@ -15,8 +15,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
-import com.kof2015.server.FighterInfo;
+import com.common.FighterInfo;
 
 public class FormationPanel extends JPanel {
 
@@ -60,7 +61,7 @@ public class FormationPanel extends JPanel {
 		{
 			tiles[ i ].setSelectedBattler( i , candidates[i].id );
 		}
-		infoLabel.setText("请选择阵型。");
+		infoLabel.setText("请选择阵型");
 	}
 	
 	/**
@@ -71,21 +72,39 @@ public class FormationPanel extends JPanel {
 	public void readyToFight( FighterInfo[] fighters )
 	{
 		String info = "";
-		for( FighterInfo fighter : fighters )
-			info += fighter.id + " ";
+		
+		int index=0;
+		
+		for( FighterInfo fighter : fighters ){
+			info += String.valueOf(++index)+"号位:【"+fighter.name+"】\n";
+		}
 		infoLabel.setText(info);
+		infoLabel.append("阵型部署完毕,准备与【"+oppoName+"】决一死战!");
+		
+		cog.formationover(fighters);
+		
+		
 	}
 	
 	private MemberDropdownPanel[] tiles;
 	private FighterInfo[] candidates;
-	private JLabel infoLabel;
+	private JTextArea infoLabel;
+	
+	
+	private ClientOneGame cog;
+	
+	private String oppoName;
 	
 	/**
 	 * 布置好界面，主要描述好位置。
 	 * 因为还没有数据，所以数据的初始化要滞后。
 	 */
-	public FormationPanel()
+	public FormationPanel(ClientOneGame cog,String oppoName)
 	{
+		
+		this.cog=cog;
+		this.oppoName=oppoName;
+		
 		final int[] convert = { 3, 0, 4, 1, 5, 2 };
 		
 		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -107,7 +126,10 @@ public class FormationPanel extends JPanel {
 				JPanel infoPanel = new JPanel();
 				infoPanel.setLayout(new BorderLayout(5, 5));
 				{
-					infoLabel = new JLabel();
+					infoLabel = new JTextArea();
+					infoLabel.setEditable(false);
+					
+					infoLabel.setLineWrap(true);
 					infoLabel.setPreferredSize(new Dimension(200, 0));
 					infoLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
 					infoPanel.add(infoLabel, BorderLayout.CENTER);
@@ -141,7 +163,7 @@ public class FormationPanel extends JPanel {
 	private void selected( MemberDropdownPanel tile, int selected )
 	{
 		tile.setSelectedBattler( selected, candidates[selected].id );
-		infoLabel.setText(candidates[selected].toStringHtml());
+		infoLabel.setText(candidates[selected].toString());
 		
 		for( int i = 0; i < tiles.length; i++ )
 		{
@@ -169,7 +191,7 @@ public class FormationPanel extends JPanel {
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
-		FormationPanel testObject = new FormationPanel();
+		FormationPanel testObject = new FormationPanel(null,"圣嘿");
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle("测试：" + testObject.getClass().getName());

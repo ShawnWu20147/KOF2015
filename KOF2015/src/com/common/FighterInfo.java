@@ -1,4 +1,4 @@
-package com.kof2015.server;
+package com.common;
 import java.io.Serializable;
 
 

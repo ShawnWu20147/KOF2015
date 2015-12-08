@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Vector;
 
+import com.common.FighterInfo;
+import com.common.FighterInstance;
 import com.common.Message;
 import com.kof2015.client.ChooseFighter;
 
@@ -35,6 +37,12 @@ public class ServerHandleOne implements Runnable {
 	volatile String extra_for_opp="";
 	
 	
+	FighterInstance []p1_fi;
+	FighterInstance []p2_fi;
+	volatile boolean p1_format_over;
+	volatile boolean p2_format_over;
+	
+	
 	public ServerHandleOne(ArrayList<FighterInfo> all_fighters,ObjectInputStream ois1,ObjectInputStream ois2,ObjectOutputStream oos1,ObjectOutputStream oos2,String name1,String name2){
 		this.all_fighters=all_fighters;
 		this.ois1=ois1;
@@ -50,6 +58,9 @@ public class ServerHandleOne implements Runnable {
 		
 		p1_sel_over=false;
 		p2_sel_over=false;
+		
+		p1_format_over=false;
+		p2_format_over=false;
 		
 	}
 	
@@ -143,6 +154,36 @@ public class ServerHandleOne implements Runnable {
 						
 						break;
 					case 3:
+						
+						FighterInfo []fi=toh.fi;
+						assert(fi.length==6);
+						if (toh.from==1){
+							p1_fi=new FighterInstance[6];
+							for (int i=0;i<6;i++){
+								p1_fi[i]=new FighterInstance(fi[i], 0);
+							}
+							System.out.println("【"+name1+"】布阵完毕!");
+							p1_format_over=true;
+							if (p2_format_over){
+								GO_TO_BATTLE();
+							}
+						}
+						else if (toh.from==2){
+							p2_fi=new FighterInstance[6];
+							for (int i=0;i<6;i++){
+								p2_fi[i]=new FighterInstance(fi[i], 0);
+							}
+							System.out.println("【"+name1+"】布阵完毕!");
+							p2_format_over=true;
+							if (p1_format_over){
+								GO_TO_BATTLE();
+							}
+						}
+						else{
+							System.out.println("MEET A BUG!!!!!!!");
+							System.exit(-1);
+						}
+						
 						break;
 					case 4:
 						break;
@@ -331,11 +372,26 @@ public class ServerHandleOne implements Runnable {
 			
 			//now here means select over!!!!
 			
-			
-			
-			while (true){
-				
+			FighterInfo []p1f=new FighterInfo[8];
+			FighterInfo []p2f=new FighterInfo[8];
+			int index_p1=0,index_p2=0;
+			for (int i=0;i<16;i++){
+				if (cf[i].who_select==1){
+					p1f[index_p1++]=cf[i].fi;
+				}
+				else{
+					p2f[index_p2++]=cf[i].fi;
+				}
 			}
+			Message msg_both_send=new Message(3);
+			msg_both_send.fi=p1f;
+			oos1.writeUnshared(msg_both_send);
+			
+			msg_both_send.fi=p2f;
+			oos2.writeUnshared(msg_both_send);
+			
+			
+			
 			
 			
 			
@@ -350,6 +406,14 @@ public class ServerHandleOne implements Runnable {
 		
 		
 
+	}
+
+
+	public void GO_TO_BATTLE() {
+		System.out.println("双方布阵完毕!准备战斗!");
+		//using p1_fi[] and p2_fi[] which are FighterInstance
+		// first send them to clients, with type=4 subtype=-1 means start
+		
 	}
 
 }

@@ -15,8 +15,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.common.FighterInfo;
 import com.kof2015.server.DBHelper;
-import com.kof2015.server.FighterInfo;
 
 public class SelectPanel extends JPanel{
 	TextArea ta_me;

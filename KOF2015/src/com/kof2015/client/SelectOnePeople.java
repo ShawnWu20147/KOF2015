@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -57,7 +58,13 @@ public class SelectOnePeople extends JPanel {
 		select=new JButton("Ñ¡Ôñ");
 		intro=new JButton("¼ò½é");
 		
-		ImageIcon image = new ImageIcon("img/battler/"+myid+".jpg"); 
+		String pic_path="img/battler/"+myid+".jpg";
+		File f=new File("img/battler/"+myid+".jpg");
+		if (!f.exists())
+			pic_path="../img/battler/"+myid+".jpg";
+		
+		
+		ImageIcon image = new ImageIcon(pic_path); 
 		
 		jl_pic=new JLabel(image);
 		

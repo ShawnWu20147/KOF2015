@@ -2,7 +2,7 @@ package com.kof2015.client;
 
 import java.io.Serializable;
 
-import com.kof2015.server.FighterInfo;
+import com.common.FighterInfo;
 
 public class ChooseFighter implements Serializable{
 	public FighterInfo fi;

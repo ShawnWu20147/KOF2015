@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ItemListener;
+import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -63,8 +64,14 @@ public class MemberDropdownPanel extends JPanel {
 		else
 			selectBox.setSelectedIndex( -1 );
 		
+		String pic_path="img/battler/" + imgid + ".jpg";
+		File f=new File(pic_path);
+		if (!f.exists()){
+			pic_path="../img/battler/" + imgid + ".jpg";
+		}
+		
 		if( imgid >= 0 )
-			faceLabel.setIcon(new ImageIcon("img/battler/" + imgid + ".jpg"));
+			faceLabel.setIcon(new ImageIcon(pic_path));
 		else
 			faceLabel.setIcon(null);
 	}
