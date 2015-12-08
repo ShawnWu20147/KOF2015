@@ -22,13 +22,7 @@ public class ClientOneGame implements Runnable{
 	String serverIp,nickName,challenger;
 	int what_i;
 	
-	volatile boolean other_conn;
-	
-	
-	volatile boolean setup_choose_finish;
-	
-	volatile boolean ready_to_select;
-	volatile boolean select_over;
+
 	
 	volatile int canSel;
 	volatile String givePanelMe,givePanelOpp;
@@ -43,18 +37,18 @@ public class ClientOneGame implements Runnable{
 	
 	SelectPanel sp;
 	
+	int round;	//add
+	
 	public ClientOneGame(JFrame jf,String serverIp,String nickName){
 		this.jf=jf;
 		this.serverIp=serverIp;
 		this.nickName=nickName;
 		
-		
-		setup_choose_finish=false;
-		other_conn=false;
-		ready_to_select=false;
-		select_over=false;
+
 		canSel=0;
 		msg_list=new Vector<Message>();
+		
+		round=0;
 	}
 	
 	class Show_OptionPane implements Runnable{
@@ -97,7 +91,8 @@ public class ClientOneGame implements Runnable{
 						what_i=msg.i_info1;
 						System.out.println("ITS LOGIN! I AM "+what_i);
 						challenger=(msg.i_info1==1)?msg.s_info2:msg.s_info1;
-						other_conn=true;
+						
+						other_has_conn();	//added
 						break;
 					case 2:
 						//select cards
@@ -107,7 +102,8 @@ public class ClientOneGame implements Runnable{
 							givePanelMe=msg.s_info1;
 							givePanelOpp=msg.s_info2;
 							acf=msg.cf;
-							setup_choose_finish=true;
+							
+							setup_choose_finish();	//add
 						}
 						else if (msg.i_info1==1){
 							//end
@@ -117,7 +113,8 @@ public class ClientOneGame implements Runnable{
 							givePanelMe=msg.s_info1;
 							givePanelOpp=msg.s_info2;
 							//even it is over, we should tell the player
-							ready_to_select=true;
+							
+							one_choose_me();//add
 							
 						}
 						else{
@@ -139,11 +136,11 @@ public class ClientOneGame implements Runnable{
 								System.out.println("in handlemsg:"+ccc.fi.name+"\t"+ccc.selected);
 							}
 							
-							ready_to_select=true;
+							
+							one_choose_me();//add
 							
 						}
 						
-						select_over=false;
 						break;
 						
 							
@@ -184,6 +181,32 @@ public class ClientOneGame implements Runnable{
 		
 	}
 	
+	public void other_has_conn(){
+		System.out.println("conn other!");
+		new Thread(new Show_OptionPane("开始选牌", "已与对手["+challenger+"]连接")).start();		
+	}
+	
+	public void setup_choose_finish(){
+		JFrame jf=new JFrame();
+		//jf.setLocationRelativeTo(null);
+		jf.setSize(1200, 800);
+		jf.setResizable(false);
+		jf.setTitle(nickName+":选人阶段,首先双方各选1人,然后双方轮流各选2人,直到结束");
+		
+		sp=new SelectPanel(what_i,this,acf);
+		sp.addTexttoMe("准备开始格斗家挑选\n"+givePanelMe);
+		
+		jf.add(sp);
+		jf.setVisible(true);
+	}
+	
+	public void one_choose_me(){
+		sp.addTexttoOpp(givePanelOpp);
+		sp.addTexttoMe(givePanelMe);
+		sp.refreshAccordingToCF(acf);
+		sp.repaint();
+	}
+	
 	
 	@Override
 	public void run() {
@@ -211,60 +234,11 @@ public class ClientOneGame implements Runnable{
 			new Thread(new Show_OptionPane("正在等待挑战者", "已连接战网")).start();
 			
 			
-			
-			
-			while (!other_conn) Thread.currentThread().sleep(20);
-			
-			System.out.println("conn other!");
-			
-			new Thread(new Show_OptionPane("开始选牌", "已与对手["+challenger+"]连接")).start();
-			
-			while (!setup_choose_finish) Thread.currentThread().sleep(20);
-			
-			
-			//jframe.show
-			JFrame jf=new JFrame();
-			//jf.setLocationRelativeTo(null);
-			jf.setSize(1200, 800);
-			jf.setResizable(false);
-			jf.setTitle(nickName+":选人阶段,首先双方各选1人,然后双方轮流各选2人,直到结束");
-			
-			sp=new SelectPanel(what_i,this,acf);
-			sp.addTexttoMe("准备开始格斗家挑选\n"+givePanelMe);
-			
-			jf.add(sp);
-			jf.setVisible(true);
-			
-			ready_to_select=false;
-			
-			
-			for (int wait=0;wait<6;wait++){
-				while (!ready_to_select) Thread.currentThread().sleep(20);
-				
-				ready_to_select=false;
-				
-				sp.addTexttoOpp(givePanelOpp);
-				sp.addTexttoMe(givePanelMe);
-				sp.refreshAccordingToCF(acf);
-				sp.repaint();
-				
-				
-				// now its my turn to select one
-				while (!select_over) Thread.currentThread().sleep(20);
-				
-				select_over=false;
-				
-			}
-			
+						
 			//following should be the 布阵
 			
 			
-			
-			
-			
-			
-			
-			
+					
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -305,17 +279,11 @@ public class ClientOneGame implements Runnable{
 		}
 		
 		
-		select_over=true;
-		
-		
 		
 		
 		
 	}
 	
 	
-	
-	public void setSelectOver(){
-		select_over=true;
-	}
+
 }
