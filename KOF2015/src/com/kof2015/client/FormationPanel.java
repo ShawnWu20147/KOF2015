@@ -13,7 +13,6 @@ import java.awt.event.ItemListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
@@ -57,9 +56,13 @@ public class FormationPanel extends JPanel {
 		}
 		this.candidates = candidates;
 		
+		formation = new int[ tiles.length ];
+		for( int i = 0; i < tiles.length; i++ )
+			formation[ i ] = -1;
 		for( int i = 0; i < candidates.length && i < tiles.length; i++ )
 		{
 			tiles[ i ].setSelectedBattler( i , candidates[i].id );
+			formation[ i ] = i;
 		}
 		infoLabel.setText("请选择阵型");
 	}
@@ -81,15 +84,22 @@ public class FormationPanel extends JPanel {
 		infoLabel.setText(info);
 		infoLabel.append("阵型部署完毕,准备与【"+oppoName+"】决一死战!");
 		
-		cog.formationover(fighters);
-		
+		try {
+			cog.formationover(fighters);
+		} catch( NullPointerException e ) {
+			System.out.println("单元测试中...");
+		}
 		
 	}
 	
 	private MemberDropdownPanel[] tiles;
-	private FighterInfo[] candidates;
 	private JTextArea infoLabel;
 	
+	private FighterInfo[] candidates;
+	/**
+	 * 布阵信息，按照队伍位置【0 ~ 6】编号，内容为候选者编号。
+	 */
+	private int[] formation;
 	
 	private ClientOneGame cog;
 	
@@ -142,7 +152,7 @@ public class FormationPanel extends JPanel {
 							{
 								FighterInfo[] fighters = new FighterInfo[ 6 ];
 								for( int i = 0; i < fighters.length; i++ )
-									fighters[ i ] = candidates[ tiles[ i ].getSelectedIndex() ];
+									fighters[ i ] = candidates[ formation[ i ] ];
 								readyToFight(fighters);
 							}
 							else
@@ -162,15 +172,30 @@ public class FormationPanel extends JPanel {
 	
 	private void selected( MemberDropdownPanel tile, int selected )
 	{
-		tile.setSelectedBattler( selected, candidates[selected].id );
-		infoLabel.setText(candidates[selected].toString());
-		
+		int oldSelected = -1;
+		int conflict = -1;
 		for( int i = 0; i < tiles.length; i++ )
 		{
-			if( tiles[ i ] != tile && tiles[ i ].getSelectedIndex() == selected )
+			if( tiles[ i ] == tile )
 			{
-				tiles[ i ].setSelectedBattler( -1, -1 );
+				if( formation[ i ] == selected )
+					break;
+				
+				oldSelected = formation[ i ];
+				formation[ i ] = selected;
+				tile.setSelectedBattler( selected, candidates[selected].id );
+				infoLabel.setText(candidates[selected].toString());
 			}
+			else if( tiles[ i ].getSelectedIndex() == selected )
+			{
+				conflict = i;
+			}
+		}
+		
+		if( conflict >= 0 )
+		{
+			formation[ conflict ] = oldSelected;
+			tiles[ conflict ].setSelectedBattler(oldSelected, candidates[ oldSelected ].id );
 		}
 	}
 	
@@ -178,7 +203,7 @@ public class FormationPanel extends JPanel {
 	{
 		for( int i = 0; i < tiles.length; i++ )
 		{
-			int id = tiles[ i ].getSelectedIndex();
+			int id = formation[ i ];
 			if( id < 0 )
 				return false;
 			// TODO 检查没有超过上界
