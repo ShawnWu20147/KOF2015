@@ -36,16 +36,16 @@ public class FighterInstance implements Serializable{
 	public FighterInstance(FighterInfo base, double ratio) {
 		this.base=base;
 		
-		max_hp=base.base_hp;
+		max_hp=(int) (base.base_hp*(1+ratio));
 		
-		hp=base.base_hp;
+		hp=(int) (base.base_hp*(1+ratio));
 		
 		true_attack=base.base_attack;
 		true_defence=base.base_defence;
 		true_hit=base.base_hit;
 		true_block=base.base_block;
 		
-		anger=0;
+		anger=300;
 		
 		isDead=false;
 	}

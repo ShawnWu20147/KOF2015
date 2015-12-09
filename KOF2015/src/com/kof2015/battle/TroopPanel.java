@@ -45,6 +45,21 @@ public class TroopPanel extends JPanel {
 		repaint();
 	}
 	
+	public void updateMe(FighterInstance[] one,boolean self){
+		for (int i=0;i<6;i++){
+			if (self)
+				bp[i].updateHpandRage(one[i]);
+			else
+				bp[i].updateHpandRage(one[i]);
+			bp[i].updateRage(one[i]);
+		}
+		
+		
+		
+		repaint();
+	}
+	
+	
 	public void disableAll(){
 		for (int i=0;i<6;i++)
 			bp[i].disableAll();
@@ -118,7 +133,16 @@ public class TroopPanel extends JPanel {
 	}
 
 	public void disableMyNormal(int i_info2) {
+		
 		bp[i_info2].disableAttack();
+		
+	}
+
+	public void unselectAll() {
+		for (int i=0;i<6;i++){
+			bp[i].isClicked=false;
+			bp[i].unselect();
+		}
 		
 	}
 	

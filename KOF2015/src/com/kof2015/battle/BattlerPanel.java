@@ -51,6 +51,7 @@ public class BattlerPanel extends JPanel {
 	
 	FighterInstance myfi;
 	
+
 	
 	public void disableAll(){
 		disableAttack();
@@ -91,7 +92,11 @@ public class BattlerPanel extends JPanel {
 	}
 	
 	
-	
+	public void updateRage(FighterInstance fi){
+		if (fi.anger>=1000){
+			skillButton.setEnabled(true);
+		}
+	}
 	
 	public void updateHpandRage(FighterInstance fi){
 		this.myfi=fi;
@@ -109,6 +114,8 @@ public class BattlerPanel extends JPanel {
 		
 		
 		if (hp<=0){
+			isClicked=false;
+			faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
 			
 			String pic_path="img/battler/dead.jpg";
 			File f=new File(pic_path);
@@ -181,7 +188,6 @@ public class BattlerPanel extends JPanel {
 			faceButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					//System.out.println("button clicked: " + faceButton.hashCode());
 					if (!isClicked){
 						isClicked=true;
 						Color cc=isme?Color.RED:Color.BLUE;
@@ -293,4 +299,5 @@ public class BattlerPanel extends JPanel {
 		enableSkill();
 		
 	}
+
 }

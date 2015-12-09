@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
@@ -51,7 +52,7 @@ public class BattlePanel extends JPanel {
 	
 	
 	
-	public BattlePanel(ClientOneGame cog,FighterInstance []self,FighterInstance[] opp) {
+	public BattlePanel(ClientOneGame cog,FighterInstance []self,FighterInstance[] other) {
 		this.tcog=cog;
 		setLayout(new BorderLayout(5, 10));
 		JPanel container = new JPanel();
@@ -77,11 +78,22 @@ public class BattlePanel extends JPanel {
 					}
 				}
 				if (count!=1){
-					JOptionPane.showMessageDialog(null, "只能攻击1人!", "提示", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "攻击且只1人!", "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
+				//very who_attacked correct
 				
-				//TODO need further verification
+				
+				if (who_attacked>=3){
+					if (opp_p[0].myfi.hp>0 || opp_p[1].myfi.hp>0 || opp_p[2].myfi.hp>0){
+						JOptionPane.showMessageDialog(null, "必须先攻击前排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+				}
+				
+				
+				for (int i=0;i<6;i++)
+					my_p[i].disableSkill();
 				
 				// who_attack -> who->attacked
 				tcog.verify_attack_actions(who_attack,who_attacked);
@@ -96,14 +108,117 @@ public class BattlePanel extends JPanel {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println(arg0.getID());
+				JButton jb=(JButton) arg0.getSource();
+				int who_attack=0;
+				for (int i=0;i<6;i++){
+					if (my_p[i].skillButton==jb){
+						who_attack=i;
+						break;
+					}
+				}
+				
+				System.out.println(who_attack+" "+my_p[who_attack].myfi.base.name+"放大招了");
+				
+				int count=0;
+				int who_attacked=0;
+				for (int i=0;i<6;i++){
+					if (opp_p[i].isClicked){
+						count++;
+						who_attacked=i;
+					}
+				}
+				FighterInstance fi=my_p[who_attack].myfi;
+				assert(fi.anger>=1000);
+				int skill_type=fi.base.skill_type;
+				switch(skill_type){
+				case 0:
+					//列杀
+					if (count>=3){
+						JOptionPane.showMessageDialog(null, "请选最多2个同列角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					if (count==0){
+						JOptionPane.showMessageDialog(null, "请至少选择1个角色决定一列!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					if (count==1){
+						if (who_attacked>2 && opp_p[who_attacked-3].myfi.hp<=0){
+							JOptionPane.showMessageDialog(null, "此格斗家前面人已挂了,无法进行列杀!", "提示", JOptionPane.INFORMATION_MESSAGE);
+							return;
+						}
+					}
+					if (count==2){
+						if (who_attacked<=2){
+							if ( opp_p[who_attacked+3].isClicked!=true){
+								JOptionPane.showMessageDialog(null, "必选选择2个同列格斗家!", "提示", JOptionPane.INFORMATION_MESSAGE);
+								return;
+							}
+						}
+						else{
+							if ( opp_p[who_attacked-3].isClicked!=true){
+								JOptionPane.showMessageDialog(null, "必选选择2个同列格斗家!", "提示", JOptionPane.INFORMATION_MESSAGE);
+								return;
+							}
+						}
+					}
+					break;
+				case 1:
+					//单体
+					if (count!=1){
+						JOptionPane.showMessageDialog(null, "请选择一个前排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					if (who_attacked>2){
+						if (opp_p[0].myfi.hp>0 || opp_p[1].myfi.hp>0 || opp_p[2].myfi.hp>0){
+							JOptionPane.showMessageDialog(null, "前排角色没有死绝,无法选择一个后排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+							return;
+						}
+					}
+					break;
+				case 2:
+					//of course succ
+					//AOE
+					break;
+				case 3:
+					//of course succ
+					//全体加血
+					break;
+				case 4:
+					//of course succ
+					//前排全杀
+					break;
+				case 5:
+					//of course succ
+					//后排全杀
+					break;
+				case 6:
+					//杀伤 后排单人
+					if (count!=1){
+						JOptionPane.showMessageDialog(null, "请选择一个后排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					if (who_attacked<=2 && (opp_p[3].myfi.hp>0 || opp_p[4].myfi.hp>0 || opp_p[5].myfi.hp>0)){
+						JOptionPane.showMessageDialog(null, "后排未死光,请选择一个后排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					break;
+				case 7:
+					//of course succ
+					//随机三人杀(连续判定3次)
+					break;
+				}
+				
+				
+				
+				tcog.verify_skill_actions(who_attack,who_attacked);
+				
 				
 			}
 		};		
 		
 		
 		troopLeft = new TroopPanel(self,true,attack_l,skill_l);
-		troopRight = new TroopPanel(opp,false,attack_l,skill_l);
+		troopRight = new TroopPanel(other,false,attack_l,skill_l);
 		
 		
 		
@@ -125,11 +240,16 @@ public class BattlePanel extends JPanel {
 		container.add(troopRight);
 		add(container, BorderLayout.CENTER);
 		
+		
+		
 		infoArea = new JTextArea();
 		infoArea.setEditable(false);
 		infoArea.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true));
 		infoArea.setPreferredSize(new Dimension(0, 150));
-		add(infoArea, BorderLayout.SOUTH);
+		JScrollPane jp=new JScrollPane(infoArea);
+		jp.setVerticalScrollBarPolicy( 
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
+		add(jp, BorderLayout.SOUTH);
 		
 		
 		end_my_turn.addActionListener(new ActionListener() {
@@ -148,11 +268,18 @@ public class BattlePanel extends JPanel {
 	}
 	
 	public void addLog(String a){
+		
 		infoArea.append(a);
 	}
 	
 	public void update(FighterInstance []self,FighterInstance[] opp){
 		troopLeft.update(self, true);
+		troopRight.update(opp, false);
+		repaint();
+	}
+	
+	public void updateMyTurn(FighterInstance []self,FighterInstance[] opp){
+		troopLeft.updateMe(self, true);
 		troopRight.update(opp, false);
 		repaint();
 	}
@@ -266,6 +393,15 @@ public class BattlePanel extends JPanel {
 
 	public void disableMyNormal(int i_info2) {
 		troopLeft.disableMyNormal(i_info2);
+		
+	}
+
+
+
+	public void unSelectAll() {
+		troopLeft.unselectAll();
+		troopRight.unselectAll();
+		
 		
 	}
 }

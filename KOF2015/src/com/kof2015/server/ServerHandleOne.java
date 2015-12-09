@@ -162,7 +162,10 @@ public class ServerHandleOne implements Runnable {
 						if (toh.from==1){
 							p1_fi=new FighterInstance[6];
 							for (int i=0;i<6;i++){
-								p1_fi[i]=new FighterInstance(fi[i], 0);
+								if (i<=2)
+									p1_fi[i]=new FighterInstance(fi[i], 0.2);
+								else
+									p1_fi[i]=new FighterInstance(fi[i], 0);
 							}
 							System.out.println("【"+name1+"】布阵完毕!");
 							p1_format_over=true;
@@ -173,7 +176,11 @@ public class ServerHandleOne implements Runnable {
 						else if (toh.from==2){
 							p2_fi=new FighterInstance[6];
 							for (int i=0;i<6;i++){
-								p2_fi[i]=new FighterInstance(fi[i], 0);
+								if (i<=2)
+									p2_fi[i]=new FighterInstance(fi[i], 0.2);
+								else
+									p2_fi[i]=new FighterInstance(fi[i], 0);
+								
 							}
 							System.out.println("【"+name1+"】布阵完毕!");
 							p2_format_over=true;
@@ -189,10 +196,21 @@ public class ServerHandleOne implements Runnable {
 						break;
 					case 4:
 						switch (toh.i_info1){
-						case 1:
-							int from_who=toh.from;
+						case 0:
+							//必杀攻击
+							int from_who=toh.from;	//1 or 2
 							int atk_id=toh.i_info2;
 							int atkd_id=toh.i_info3;
+							
+							ConductOnePower(from_who,atk_id,atkd_id);
+							
+							break;
+						case 1:
+							//普通攻击
+							from_who=toh.from;	//1 or 2
+							atk_id=toh.i_info2;
+							atkd_id=toh.i_info3;
+							
 							ConductOneAttak(from_who,atk_id,atkd_id);
 
 							break;
@@ -215,7 +233,6 @@ public class ServerHandleOne implements Runnable {
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		t1=new Thread(new Recv_1());
 		t2=new Thread(new Recv_2());
 		t3=new Thread(new Handle_Msg());
@@ -231,7 +248,7 @@ public class ServerHandleOne implements Runnable {
 		//following are choose pai
 		double d1=Math.random();
 		
-		
+		d1=0.2;
 		
 		if (d1<0.5){
 			first_attack=1;
@@ -419,6 +436,8 @@ public class ServerHandleOne implements Runnable {
 
 	}
 
+
+
 	public void ChangePlayer(int from_who) {
 		
 		
@@ -434,19 +453,19 @@ public class ServerHandleOne implements Runnable {
 		try{
 			switch(from_who){
 			case 1:
-				msg.i_info2=2;
-				msg.s_info1="你【"+name2+"】的回合开始";
+				msg.i_info2=2;	//轮到p2行动
+				msg.s_info1="你【"+name2+"】的回合开始\n";
 				oos2.writeUnshared(msg);
 				
-				msg.s_info1="对手【"+name2+"】的回合开始";
+				msg.s_info1="对手【"+name2+"】的回合开始\n";
 				oos1.writeUnshared(msg);
 				break;
 			case 2:
 				msg.i_info2=1;
-				msg.s_info1="你【"+name1+"】的回合开始";
+				msg.s_info1="你【"+name1+"】的回合开始\n";
 				oos1.writeUnshared(msg);
 				
-				msg.s_info1="对手【"+name1+"】的回合开始";
+				msg.s_info1="对手【"+name1+"】的回合开始\n";
 				oos2.writeUnshared(msg);
 			}
 		}
@@ -464,36 +483,83 @@ public class ServerHandleOne implements Runnable {
 			FighterInstance fi_d=p2_fi[atkd_id];
 			
 			int dmg=fi_a.base.base_attack-fi_d.base.base_defence;
-			String info1="【"+name1+"】.["+fi_a.base.name+"]对【"+name2+"】.["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			String info1="【"+name1+"】的["+fi_a.base.name+"]对【"+name2+"】的["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
 			fi_d.hp-=dmg;
+			
+			
+			fi_a.anger+=fi_a.base.base_attack_anger;
+			fi_d.anger+=fi_d.base.base_attacked_anger;
+			
 			if (fi_d.hp<0){
 				info1+=fi_d.base.name+"倒下了!\n";
+				
+				fi_a.anger+=50;
+				
 			}
+			
+			if (fi_a.anger>1000) fi_a.anger=1000;
+			if (fi_d.anger>1000) fi_d.anger=1000;
 			
 			System.out.println(info1);
 			
 			Message msg_1=new Message(4);
-			msg_1.i_info1=1;
-			msg_1.i_info2=1;
 			
-			msg_1.i_info3=atk_id;
+			msg_1.i_info1=1;	//normal attack
+			msg_1.i_info2=1;	//whose turn
 			
-			msg_1.s_info1=info1;
+			msg_1.i_info3=atk_id;	//attacker's id
+			
+			msg_1.s_info1=info1;	//show info
 			
 			addFIBtoMsg(msg_1);
 			
 			
+			/*
 			for (int i=0;i<12;i++){
 				System.out.println("攻击后:"+msg_1.fi_b[i].base.name+" "+msg_1.fi_b[i].hp);
 			}
+			*/
+			
+			msg_1.s_info2="debug";
 			
 			try{
+				oos1.reset();
+				oos2.reset();
+				
 				oos1.writeUnshared(msg_1);
 				oos2.writeUnshared(msg_1);
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 			msg_1=null;
+			
+			boolean over=true;
+			for (FighterInstance fp2:p2_fi){
+				if (fp2.hp>0){
+					over=false;
+					break;
+				}
+			}
+			if (over){
+				// p1 win
+				Message msg_over=new Message(4);
+				msg_over.i_info1=2;
+				msg_over.i_info2=1;
+				msg_over.s_info1="恭喜你赢了!";
+				try {
+					oos1.writeUnshared(msg_over);
+					
+					msg_over.s_info1="你输了,傻叉!";
+					oos2.writeUnshared(msg_over);
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			}
+			
+			
+			
 			
 			
 			break;
@@ -503,19 +569,31 @@ public class ServerHandleOne implements Runnable {
 			fi_d=p1_fi[atkd_id];
 			
 			dmg=fi_a.base.base_attack-fi_d.base.base_defence;
-			info1="【"+name2+"】.["+fi_a.base.name+"]对【"+name1+"】.["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			info1="【"+name2+"】的["+fi_a.base.name+"]对【"+name1+"】的["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
 			fi_d.hp-=dmg;
-			if (fi_d.hp<0){
+			
+			fi_a.anger+=fi_a.base.base_attack_anger;
+			fi_d.anger+=fi_d.base.base_attacked_anger;
+			
+			if (fi_d.hp<=0){
 				info1+=fi_d.base.name+"倒下了!\n";
+				
+				fi_a.anger+=50;
 			}
+			
+			if (fi_a.anger>1000) fi_a.anger=1000;
+			if (fi_d.anger>1000) fi_d.anger=1000;
+			
 			
 			System.out.println(info1);
 			
 
 			
 			Message msg_2=new Message(4);
-			msg_2.i_info1=1;
-			msg_2.i_info2=1;
+			msg_2.i_info1=1;		//normal attack
+			msg_2.i_info2=2;		//whose turn
+			
+			msg_2.s_info1=info1;
 			
 			msg_2.i_info3=atk_id;
 			
@@ -525,20 +603,509 @@ public class ServerHandleOne implements Runnable {
 				System.out.println("攻击后:"+msg_2.fi_b[i].base.name+" "+msg_2.fi_b[i].hp);
 			}
 			
+			msg_2.s_info2="debug";
 			
 			try{
+				oos1.reset();
+				oos2.reset();
+				
 				oos2.writeUnshared(msg_2);
+				
 				oos1.writeUnshared(msg_2);
+				
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 			msg_2=null;
+			
+			
+			over=true;
+			for (FighterInstance fp1:p1_fi){
+				if (fp1.hp>0){
+					over=false;
+					break;
+				}
+			}
+			if (over){
+				// p2 win
+				Message msg_over=new Message(4);
+				msg_over.i_info1=2;
+				msg_over.i_info2=2;
+				msg_over.s_info1="恭喜你赢了!";
+				try {
+					oos2.writeUnshared(msg_over);
+					
+					msg_over.s_info1="你输了,傻叉!";
+					oos1.writeUnshared(msg_over);
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			}
+			
+			
+			
+			
 
 			
 			break;
 		}
 		
 	}
+	
+	public String generateInfo(String attacker,FighterInstance wo,String defencer,FighterInstance ta){
+		String name=wo.base.name;
+		String skill_name=wo.base.skill_name;
+		double rate=wo.base.skill_ratio;
+		
+		String des1="【"+attacker+"】的["+name+"]发动了必杀技------"+skill_name+"\n";
+		
+		int  dmg=(int) (wo.base.base_attack*rate-ta.base.base_defence);
+		String kill="对【"+defencer+"】的["+ta.base.name+"造成了"+dmg+"的伤害\n";
+		
+		wo.anger+=wo.base.base_power_anger;
+		ta.anger+=ta.base.base_powered_anger;
+		
+		ta.hp-=dmg;
+		if (ta.hp<=0){
+			kill+=ta.base.name+"倒下了\n";
+			ta.anger=0;
+			wo.anger+=50;
+		}
+		
+		if (wo.anger>1000) wo.anger=1000;
+		return des1+kill;
+		
+	}
+	
+	public void ConductOnePower(int from_who, int atk_id, int atkd_id) {
+		switch(from_who){
+		case 1:
+			FighterInstance wo=p1_fi[atk_id];
+			int skill_type=wo.base.skill_type;
+			wo.anger=0;
+			
+			switch(skill_type){
+			case 0:
+				
+				if (atkd_id<=2){
+					FighterInstance fi1=p2_fi[atkd_id];
+					
+					String log1=generateInfo(name1, wo, name2, fi1);
+					
+					if (p2_fi[atkd_id+3].hp>0){
+						FighterInstance fi2=p2_fi[atkd_id+3];
+						log1+=generateInfo(name1, wo, name2, fi2);
+					}
+					
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is sent
+				}
+				else{
+					//一定是后排 可能前排已经挂了,可能没有
+					FighterInstance fi1=p2_fi[atkd_id];
+					
+					String log1=generateInfo(name1, wo, name2, fi1);
+					
+					if (p2_fi[atkd_id-3].hp>0){
+						FighterInstance fi2=p2_fi[atkd_id-3];
+						log1+=generateInfo(name1, wo, name2, fi2);
+					}
+					
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is sent
+				}
+				
+				
+				
+				break;
+			case 1:
+				//单体
+				{
+				FighterInstance fi1=p2_fi[atkd_id];
+				
+				String log1=generateInfo(name1, wo, name2, fi1);
+				
+				sendPowerResult(log1, 1, atk_id);
+				
+				//log1 is sent 
+				
+				}
+				
+				
+				break;
+			case 2:
+				//AOE
+				{
+					String log1="";
+					for (int i=0;i<6;i++){
+						FighterInstance fi1=p2_fi[i];
+						if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+					}
+					
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is used
+				}
+				break;
+			case 3:
+				//加血
+				//直接在这里写
+				{
+					String log1="";
+					for (int i=0;i<6;i++){
+						FighterInstance fi1=p1_fi[i];
+						if (fi1.hp<=0) continue;
+						int orig=fi1.hp;
+						int restore= (int) (wo.base.base_attack*wo.base.skill_ratio);
+						fi1.hp+=restore;
+						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
+						int true_res=fi1.hp-orig;
+						log1+="【"+name1+"】的["+fi1.base.name+"]回血"+true_res+"\n";
+					}
+					sendPowerResult(log1, 1, atk_id);
+				}
+				
+				
+				break;
+			case 4:
+				//前排全杀
+				{
+					String log1="";
+					boolean ok=false;
+					for (int i=0;i<3;i++){
+						FighterInstance fi1=p2_fi[i];
+						if (fi1.hp>0){
+							ok=true;
+							log1+=generateInfo(name1, wo, name2, fi1);
+						}
+					}
+					if (!ok){
+						for (int i=3;i<6;i++){
+							FighterInstance fi1=p2_fi[i];
+							if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+						}
+					}
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is sent
+					
+				}
+				
+				break;
+			case 5:
+				{
+					String log1="";
+					boolean ok=false;
+					for (int i=3;i<6;i++){
+						FighterInstance fi1=p2_fi[i];
+						if (fi1.hp>0){
+							ok=true;
+							log1+=generateInfo(name1, wo, name2, fi1);
+						}
+					}
+					if (!ok){
+						for (int i=0;i<3;i++){
+							FighterInstance fi1=p2_fi[i];
+							if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+						}
+					}
+					
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is sent
+			
+				}
+				//后排全杀
+				break;
+			case 6:
+				
+				{
+				FighterInstance fi1=p2_fi[atkd_id];
+				
+				String log1=generateInfo(name1, wo, name2, fi1);
+				
+				sendPowerResult(log1, 1, atk_id);
+				//log1 is sent 
+				
+				}
+				
+				//后排单杀
+				break;
+			case 7:
+				{
+					String log1="";
+					for (int i=0;i<3;i++){
+						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
+						for (int j=0;i<6;j++){
+							if(p2_fi[j].hp>0) all_live.add(p2_fi[j]);
+						}
+						if (all_live.size()==0){
+							sendPowerResult(log1, 1, atk_id);
+							break;
+						}
+						int sz=all_live.size();
+						int who_luck=(int)(Math.random()*sz);
+						FighterInstance fi1=p2_fi[who_luck];
+						log1+=generateInfo(name1, wo, name2, fi1);
+					}
+					
+					sendPowerResult(log1, 1, atk_id);
+					//log1 is sent
+				}
+				//随机3人杀
+			}
+			
+			break;
+		case 2:
+
+			wo=p2_fi[atk_id];
+			skill_type=wo.base.skill_type;
+			wo.anger=0;
+			
+			switch(skill_type){
+			case 0:
+				
+				if (atkd_id<=2){
+					FighterInstance fi1=p1_fi[atkd_id];
+					
+					String log1=generateInfo(name2, wo, name1, fi1);
+					
+					if (p1_fi[atkd_id+3].hp>0){
+						FighterInstance fi2=p1_fi[atkd_id+3];
+						log1+=generateInfo(name2, wo, name1, fi2);
+					}
+					
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is sent
+				}
+				else{
+					//一定是后排 可能前排已经挂了,可能没有
+					FighterInstance fi1=p1_fi[atkd_id];
+					
+					String log1=generateInfo(name2, wo, name1, fi1);
+					
+					if (p1_fi[atkd_id-3].hp>0){
+						FighterInstance fi2=p1_fi[atkd_id-3];
+						log1+=generateInfo(name2, wo, name1, fi2);
+					}
+					
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is sent
+				}
+				
+				
+				
+				break;
+			case 1:
+				//单体
+				{
+				FighterInstance fi1=p1_fi[atkd_id];
+				
+				String log1=generateInfo(name2, wo, name1, fi1);
+				
+				sendPowerResult(log1, 2, atk_id);
+				
+				//log1 is sent 
+				
+				}
+				
+				
+				break;
+			case 2:
+				//AOE
+				{
+					String log1="";
+					for (int i=0;i<6;i++){
+						FighterInstance fi1=p1_fi[i];
+						if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
+					}
+					
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is used
+				}
+				break;
+			case 3:
+				//加血
+				//直接在这里写
+				{
+					String log1="";
+					for (int i=0;i<6;i++){
+						FighterInstance fi1=p2_fi[i];
+						int orig=fi1.hp;
+						int restore= (int) (wo.base.base_attack*wo.base.skill_ratio);
+						fi1.hp+=restore;
+						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
+						int true_res=fi1.hp-orig;
+						log1+="【"+name2+"】的["+fi1.base.name+"]回血"+true_res+"\n";
+					}
+					sendPowerResult(log1, 2, atk_id);
+				}
+				
+				
+				break;
+			case 4:
+				//前排全杀
+				{
+					String log1="";
+					boolean ok=false;
+					for (int i=0;i<3;i++){
+						FighterInstance fi1=p1_fi[i];
+						if (fi1.hp>0){
+							ok=true;
+							log1+=generateInfo(name2, wo, name1, fi1);
+						}
+					}
+					if (!ok){
+						for (int i=3;i<6;i++){
+							FighterInstance fi1=p1_fi[i];
+							if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
+						}
+					}
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is sent
+					
+				}
+				
+				break;
+			case 5:
+				{
+					String log1="";
+					boolean ok=false;
+					for (int i=3;i<6;i++){
+						FighterInstance fi1=p1_fi[i];
+						if (fi1.hp>0){
+							ok=true;
+							log1+=generateInfo(name2, wo, name1, fi1);
+						}
+					}
+					if (!ok){
+						for (int i=0;i<3;i++){
+							FighterInstance fi1=p1_fi[i];
+							if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
+						}
+					}
+					
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is sent
+			
+				}
+				//后排全杀
+				break;
+			case 6:
+				
+				{
+				FighterInstance fi1=p1_fi[atkd_id];
+				
+				String log1=generateInfo(name2, wo, name1, fi1);
+				
+				sendPowerResult(log1, 2, atk_id);
+				//log1 is sent 
+				
+				}
+				
+				//后排单杀
+				break;
+			case 7:
+				{
+					String log1="";
+					for (int i=0;i<3;i++){
+						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
+						for (int j=0;i<6;j++){
+							if(p1_fi[j].hp>0) all_live.add(p1_fi[j]);
+						}
+						if (all_live.size()==0){
+							sendPowerResult(log1, 2, atk_id);
+							break;
+						}
+						int sz=all_live.size();
+						int who_luck=(int)(Math.random()*sz);
+						FighterInstance fi1=p1_fi[who_luck];
+						log1+=generateInfo(name2, wo, name1, fi1);
+					}
+					
+					sendPowerResult(log1, 2, atk_id);
+					//log1 is sent
+				}
+				//随机3人杀
+			}
+			
+	
+			
+			break;
+		}
+		
+	}
+	
+	
+	public void sendPowerResult(String logs,int whosturn,int attk){
+		Message msg=new Message(4);
+		msg.i_info1=0;
+		msg.i_info2=whosturn;
+		msg.i_info3=attk;
+		msg.s_info1=logs;
+		addFIBtoMsg(msg);
+		
+		try{
+			oos1.reset();
+			oos2.reset();
+			oos1.writeUnshared(msg);
+			oos2.writeUnshared(msg);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		if (whosturn==1){
+			boolean over=true;
+			for (int i=0;i<6;i++){
+				if (p2_fi[i].hp>0){
+					over=false;
+					break;
+				}
+			}
+			if (over){
+				Message msg_over=new Message(4);
+				msg_over.i_info1=2;
+				msg_over.i_info2=2;
+				msg_over.s_info1="恭喜你赢了!";
+				try {
+					oos1.writeUnshared(msg_over);
+					
+					msg_over.s_info1="你输了,傻叉!";
+					oos2.writeUnshared(msg_over);
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		else{
+			boolean over=true;
+			for (int i=0;i<6;i++){
+				if (p1_fi[i].hp>0){
+					over=false;
+					break;
+				}
+			}
+			if (over){
+				Message msg_over=new Message(4);
+				msg_over.i_info1=2;
+				msg_over.i_info2=2;
+				msg_over.s_info1="恭喜你赢了!";
+				try {
+					oos2.writeUnshared(msg_over);
+					
+					msg_over.s_info1="你输了,傻叉!";
+					oos1.writeUnshared(msg_over);
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		
+	}
+	
 
 	public void addFIBtoMsg(Message msg){
 		msg.fi_b=new FighterInstance[12];
@@ -575,15 +1142,15 @@ public class ServerHandleOne implements Runnable {
 			for (int i=0;i<12;i++) System.out.println(msg_round1.fi_b[i].base.name);
 			
 			if (first_attack==1){
-				msg_round1.s_info1="你【"+name1+"】的回合开始:";
+				msg_round1.s_info1="你【"+name1+"】的回合开始\n";
 				oos1.writeUnshared(msg_round1);
-				msg_round1.s_info1="对手【"+name1+"】的回合开始:";
+				msg_round1.s_info1="对手【"+name1+"】的回合开始\n";
 				oos2.writeUnshared(msg_round1);
 			}
 			else{
-				msg_round1.s_info1="你【"+name2+"】的回合开始:";
+				msg_round1.s_info1="你【"+name2+"】的回合开始\n";
 				oos2.writeUnshared(msg_round1);
-				msg_round1.s_info1="对手【"+name2+"】的回合开始:";
+				msg_round1.s_info1="对手【"+name2+"】的回合开始\n";
 				oos1.writeUnshared(msg_round1);
 			}
 		

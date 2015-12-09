@@ -1,5 +1,6 @@
 package com.kof2015.client;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +16,8 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import com.common.FighterInfo;
 import com.common.FighterInstance;
@@ -60,8 +63,8 @@ public class ClientOneGame implements Runnable{
 	FighterInstance []p2_f;
 	
 	volatile String battle_show;
-	volatile Message foruse;
 	
+	JTextArea extra_info;
 	
 	public ClientOneGame(JFrame jf,String serverIp,String nickName){
 		this.jf_login=jf;
@@ -231,13 +234,13 @@ public class ClientOneGame implements Runnable{
 							
 							
 							
-							foruse=msg;
+							
 							
 							if (whos_turn==what_i){
-								MyTurnProcessWithNormalAttack();
+								MyTurnProcessWithNormalAttack(msg);
 							}
 							else{
-								OtherTurnProcessWithNormalAttack();
+								OtherTurnProcessWithNormalAttack(msg);
 							}
 							
 							break;
@@ -293,12 +296,15 @@ public class ClientOneGame implements Runnable{
 	}
 	
 	public void ShowResult() {
+		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		bp_total.repaint();
 		
 	}
 
-	public void OtherTurnProcessWithNormalAttack() {
+	public void OtherTurnProcessWithNormalAttack(Message foruse) {
+		System.out.println("INOTHERTURN: ready to add log:"+battle_show);
+		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
@@ -309,7 +315,9 @@ public class ClientOneGame implements Runnable{
 		
 	}
 
-	public void MyTurnProcessWithNormalAttack() {
+	public void MyTurnProcessWithNormalAttack(Message foruse) {
+		System.out.println("INMYTURN: ready to add log:"+battle_show);
+		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
@@ -317,7 +325,7 @@ public class ClientOneGame implements Runnable{
 		else
 			bp_total.update(p2_f, p1_f);
 		
-		
+		System.out.println(foruse.i_info3+"的行动结束了");
 		bp_total.disableMyNormal(foruse.i_info3);	//using index
 		
 		bp_total.disableMyPower();
@@ -326,7 +334,7 @@ public class ClientOneGame implements Runnable{
 	}
 
 	public void OtherTurnProcessWithPower() {
-		
+		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
@@ -339,6 +347,7 @@ public class ClientOneGame implements Runnable{
 	}
 
 	public void MyTurnProcessWithPower() {
+		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
@@ -352,6 +361,7 @@ public class ClientOneGame implements Runnable{
 
 	public void OtherTurnStart() {
 		//it's easy to see we should disable all elements(除了简介) in the battlefield
+		extra_info.append(battle_show);
 		bp_total.disableAll();
 		bp_total.addLog(battle_show);
 		
@@ -365,12 +375,18 @@ public class ClientOneGame implements Runnable{
 
 	public void MyTurnStart() {
 		//由于是start 所以可以enableMe 然后update决定一些不得enable的 回合中不会做这些事情
+		
+		extra_info.append(battle_show);
+		
+		bp_total.unSelectAll();
+		
 		bp_total.enableMe();
 		bp_total.addLog(battle_show);
+		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.updateMyTurn(p1_f, p2_f);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.updateMyTurn(p2_f, p1_f);
 		bp_total.repaint();
 	}
 
@@ -407,7 +423,7 @@ public class ClientOneGame implements Runnable{
 		//需要 enable 可选
 		//写啊!!!  放在refreshAccordingtoCF里面了
 		
-		
+		sp.enableConfrim();
 		
 		sp.addTexttoOpp(givePanelOpp);
 		sp.addTexttoMe(givePanelMe);
@@ -420,7 +436,7 @@ public class ClientOneGame implements Runnable{
 		sp.addTexttoMe(givePanelMe);
 		sp.refreshAccordingToCF(acf);
 		sp.repaint();
-		sp.addTexttoMe("倒计时3秒后将自动关闭此页面!!!!");
+		sp.addTexttoMe("倒计时0.5秒后将自动关闭此页面!!!!");
 		
 		Timer tm=new Timer();
 		TimerTask tt=new TimerTask() { 
@@ -430,7 +446,7 @@ public class ClientOneGame implements Runnable{
 				jf_select.dispose();
             }
 		};
-		tm.schedule(tt, 3000);
+		tm.schedule(tt, 500);
 		
 
 	}	
@@ -486,6 +502,8 @@ public class ClientOneGame implements Runnable{
 			}
 			return;
 		}
+		
+		sp.disableConfirm();
 		String toadd="你选择了:["+acf[sel[0]].fi.name+"]";
 		if (count==2) toadd+=" and ["+acf[sel[1]].fi.name+"]\n";
 		else toadd+="\n";
@@ -538,12 +556,23 @@ public class ClientOneGame implements Runnable{
 				jf_formation.dispose();
             }
 		};
-		tm.schedule(tt, 3000);
+		tm.schedule(tt, 500);
 		
 	}
 	
 	
 	public void Battle_Method(){
+		extra_info=new JTextArea();
+		extra_info.setEditable(false);
+		JFrame jf_extra=new JFrame();
+		jf_extra.setTitle("显示详细的战斗信息");
+		JScrollPane jp_s=new JScrollPane(extra_info);
+		jp_s.setVerticalScrollBarPolicy( 
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
+		jf_extra.add(jp_s);
+		jf_extra.setSize(480, 320);
+		jf_extra.setLocationRelativeTo(sp);
+		jf_extra.setVisible(true);
 		
 		//第一次时候被调用
 		
@@ -576,14 +605,15 @@ public class ClientOneGame implements Runnable{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
-		
 	}
-
-	public void end_my_turn() {
+	
+	public void verify_skill_actions(int atk_index, int atkd_index) {
+		//SEND IT TO THE SERVER
 		Message msg=new Message(4);
-		msg.i_info1=2;
 		msg.from=what_i;
+		msg.i_info1=0;	//bisha Power!
+		msg.i_info2=atk_index;
+		msg.i_info3=atkd_index;
 		try{
 			oos.writeUnshared(msg);
 		}catch(Exception e){
@@ -591,6 +621,26 @@ public class ClientOneGame implements Runnable{
 		}
 		
 	}
+	
+	
+	
+	
+
+	public void end_my_turn() {
+		Message msg=new Message(4);
+		msg.i_info1=2;
+		msg.from=what_i;
+		
+		bp_total.unSelectAll();
+		try{
+			oos.writeUnshared(msg);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+
+
 	
 	
 

@@ -36,6 +36,14 @@ public class SelectPanel extends JPanel{
 		sa.disableAll();
 	}
 	
+	public void enableConfrim(){
+		confirm.setEnabled(true);
+	}
+	
+	public void disableConfirm(){
+		confirm.setEnabled(false);
+	}
+	
 	public SelectPanel(int what_i,ClientOneGame cog,ChooseFighter[] cf){
 		this.cog_this=cog;
 		sa=new SelectAllPeople(what_i,cf);
@@ -69,6 +77,7 @@ public class SelectPanel extends JPanel{
 						has_selected[count++]=i;
 					}
 				}
+			
 				cog_this.verify_confirm(has_selected,count);
 				
 			}
