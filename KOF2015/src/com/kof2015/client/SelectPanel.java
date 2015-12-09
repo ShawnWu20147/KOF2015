@@ -29,6 +29,13 @@ public class SelectPanel extends JPanel{
 	SelectOnePeople []sp_one;
 	
 	ClientOneGame cog_this;	//this pointer
+	
+	
+	
+	public void disableAll(){
+		sa.disableAll();
+	}
+	
 	public SelectPanel(int what_i,ClientOneGame cog,ChooseFighter[] cf){
 		this.cog_this=cog;
 		sa=new SelectAllPeople(what_i,cf);

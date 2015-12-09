@@ -21,6 +21,8 @@ public class Message implements Serializable{
 	
 	public FighterInfo []fi;
 	
+	public FighterInstance []fi_b;
+	
 	public int []who_attacked;
 	
 	public int from;
@@ -58,13 +60,15 @@ public class Message implements Serializable{
 		//s_info1 used for print logs!
 	
 		//if received by clients
-		//i_info_1  [-1 starts] [0 actions-bisha] [1 actions-normal attack] [2 tell result]
-		//fi[]  0~5 belongs to P1, 6~11 belongs to P2
+		//i_info_1  [-2 starts the battle] [-1 turn starts] [0 actions-bisha] [1 actions-normal attack] [2 tell result]
+		//i_info_2 who's turn
+		//i_info_3 who takes actions
+		//fi_b[]  0~5 belongs to P1, 6~11 belongs to P2
 	
 	
 		//if received by servers
 		//from   1 or 2
-		//i_info_1	[0 actions-bisha]	[1 actions-normal attack]
+		//i_info_1	[0 actions-bisha]	[1 actions-normal attack] [2- turn over]
 		//i_info_2	who attacks (USING index)
 		//i_info_3  if it is normal attack, who is attacked (USING index)
 		// who attacked[]  if it is bisha, who are attacked

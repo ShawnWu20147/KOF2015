@@ -37,11 +37,13 @@ public class ServerHandleOne implements Runnable {
 	volatile String extra_for_opp="";
 	
 	
-	FighterInstance []p1_fi;
-	FighterInstance []p2_fi;
+	volatile FighterInstance []p1_fi;
+	volatile FighterInstance []p2_fi;
 	volatile boolean p1_format_over;
 	volatile boolean p2_format_over;
 	
+	
+	int first_attack;
 	
 	public ServerHandleOne(ArrayList<FighterInfo> all_fighters,ObjectInputStream ois1,ObjectInputStream ois2,ObjectOutputStream oos1,ObjectOutputStream oos2,String name1,String name2){
 		this.all_fighters=all_fighters;
@@ -186,6 +188,21 @@ public class ServerHandleOne implements Runnable {
 						
 						break;
 					case 4:
+						switch (toh.i_info1){
+						case 1:
+							int from_who=toh.from;
+							int atk_id=toh.i_info2;
+							int atkd_id=toh.i_info3;
+							ConductOneAttak(from_who,atk_id,atkd_id);
+
+							break;
+						case 2:
+							// some player's turn is over
+							from_who=toh.from;
+							ChangePlayer(from_who);
+							
+							break;
+						}
 						break;
 					}
 				}
@@ -217,10 +234,12 @@ public class ServerHandleOne implements Runnable {
 		
 		
 		if (d1<0.5){
+			first_attack=1;
 			System.out.println("player1["+name1+"]先手");
 			msg.msg="player1["+name1+"]先手";
 		}
 		else{
+			first_attack=2;
 			System.out.println("player2["+name2+"]先手");
 			msg.msg="player2["+name2+"]先手";			
 		}
@@ -389,15 +408,7 @@ public class ServerHandleOne implements Runnable {
 			
 			msg_both_send.fi=p2f;
 			oos2.writeUnshared(msg_both_send);
-			
-			
-			
-			
-			
-			
-			
-			
-			
+
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -408,11 +419,178 @@ public class ServerHandleOne implements Runnable {
 
 	}
 
+	public void ChangePlayer(int from_who) {
+		
+		
+		
+		Message msg=new Message(4);
+		msg.i_info1=-1;
+		addFIBtoMsg(msg);
+		
+		for (int i=0;i<12;i++){
+			System.out.println(msg.fi_b[i].base.name);
+		}
+		
+		try{
+			switch(from_who){
+			case 1:
+				msg.i_info2=2;
+				msg.s_info1="你【"+name2+"】的回合开始";
+				oos2.writeUnshared(msg);
+				
+				msg.s_info1="对手【"+name2+"】的回合开始";
+				oos1.writeUnshared(msg);
+				break;
+			case 2:
+				msg.i_info2=1;
+				msg.s_info1="你【"+name1+"】的回合开始";
+				oos1.writeUnshared(msg);
+				
+				msg.s_info1="对手【"+name1+"】的回合开始";
+				oos2.writeUnshared(msg);
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+
+	public void ConductOneAttak(int from_who, int atk_id, int atkd_id) {
+		System.out.println("一次攻击:"+from_who+" :"+atk_id+" "+atkd_id);
+		switch(from_who){
+		case 1:
+			FighterInstance fi_a=p1_fi[atk_id];
+			FighterInstance fi_d=p2_fi[atkd_id];
+			
+			int dmg=fi_a.base.base_attack-fi_d.base.base_defence;
+			String info1="【"+name1+"】.["+fi_a.base.name+"]对【"+name2+"】.["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			fi_d.hp-=dmg;
+			if (fi_d.hp<0){
+				info1+=fi_d.base.name+"倒下了!\n";
+			}
+			
+			System.out.println(info1);
+			
+			Message msg_1=new Message(4);
+			msg_1.i_info1=1;
+			msg_1.i_info2=1;
+			
+			msg_1.i_info3=atk_id;
+			
+			msg_1.s_info1=info1;
+			
+			addFIBtoMsg(msg_1);
+			
+			
+			for (int i=0;i<12;i++){
+				System.out.println("攻击后:"+msg_1.fi_b[i].base.name+" "+msg_1.fi_b[i].hp);
+			}
+			
+			try{
+				oos1.writeUnshared(msg_1);
+				oos2.writeUnshared(msg_1);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			msg_1=null;
+			
+			
+			break;
+		case 2:
+			
+			fi_a=p2_fi[atk_id];
+			fi_d=p1_fi[atkd_id];
+			
+			dmg=fi_a.base.base_attack-fi_d.base.base_defence;
+			info1="【"+name2+"】.["+fi_a.base.name+"]对【"+name1+"】.["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			fi_d.hp-=dmg;
+			if (fi_d.hp<0){
+				info1+=fi_d.base.name+"倒下了!\n";
+			}
+			
+			System.out.println(info1);
+			
+
+			
+			Message msg_2=new Message(4);
+			msg_2.i_info1=1;
+			msg_2.i_info2=1;
+			
+			msg_2.i_info3=atk_id;
+			
+			addFIBtoMsg(msg_2);
+			
+			for (int i=0;i<12;i++){
+				System.out.println("攻击后:"+msg_2.fi_b[i].base.name+" "+msg_2.fi_b[i].hp);
+			}
+			
+			
+			try{
+				oos2.writeUnshared(msg_2);
+				oos1.writeUnshared(msg_2);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			msg_2=null;
+
+			
+			break;
+		}
+		
+	}
+
+	public void addFIBtoMsg(Message msg){
+		msg.fi_b=new FighterInstance[12];
+		for (int i=0;i<6;i++){
+			msg.fi_b[i]=p1_fi[i];
+			msg.fi_b[i+6]=p2_fi[i];
+		}
+	}
 
 	public void GO_TO_BATTLE() {
 		System.out.println("双方布阵完毕!准备战斗!");
 		//using p1_fi[] and p2_fi[] which are FighterInstance
 		// first send them to clients, with type=4 subtype=-1 means start
+		
+		Message msg=new Message(4);
+		msg.i_info1=-2;
+		msg.s_info1="战斗开始!\n";
+		addFIBtoMsg(msg);
+		
+		try {
+			oos1.writeUnshared(msg);
+			oos2.writeUnshared(msg);
+		
+			System.out.println(first_attack);
+		
+			msg=null;
+			
+			//然后发送-1 给 第一回合的攻击者以及防御者
+			Message msg_round1=new Message(4);
+			msg_round1.i_info1=-1;
+			msg_round1.i_info2=first_attack;
+			addFIBtoMsg(msg_round1);	
+			
+			for (int i=0;i<12;i++) System.out.println(msg_round1.fi_b[i].base.name);
+			
+			if (first_attack==1){
+				msg_round1.s_info1="你【"+name1+"】的回合开始:";
+				oos1.writeUnshared(msg_round1);
+				msg_round1.s_info1="对手【"+name1+"】的回合开始:";
+				oos2.writeUnshared(msg_round1);
+			}
+			else{
+				msg_round1.s_info1="你【"+name2+"】的回合开始:";
+				oos2.writeUnshared(msg_round1);
+				msg_round1.s_info1="对手【"+name2+"】的回合开始:";
+				oos1.writeUnshared(msg_round1);
+			}
+		
+		} catch (IOException e) {
+
+		}
+		
 		
 	}
 

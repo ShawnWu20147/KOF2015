@@ -22,8 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 import com.common.Message;
-import com.kof2015.ui.BattlePanel;
-import com.kof2015.ui.BattlerPanel;
+import com.kof2015.battle.BattlePanel;
+import com.kof2015.battle.BattlerPanel;
 
 public class SelectOnePeople extends JPanel {
 	JButton select;
@@ -42,6 +42,15 @@ public class SelectOnePeople extends JPanel {
 	int who_sel;
 	int who_am_i;
 	
+	
+	public void disableSelect(){
+		select.setEnabled(false);
+	}
+	
+	public void enableSelect(){
+		select.setEnabled(true);
+	}	
+	
 	public boolean isSelected(){
 		return selected;
 	}
@@ -56,6 +65,9 @@ public class SelectOnePeople extends JPanel {
 		myid=cf.fi.id;
 		
 		select=new JButton("选择");
+		if (ClientOneGame.canSel==0){
+			select.setEnabled(false);
+		}
 		intro=new JButton("简介");
 		
 		String pic_path="img/battler/"+myid+".jpg";
@@ -170,7 +182,7 @@ public class SelectOnePeople extends JPanel {
 	}
 	
 	public void refresh(ChooseFighter cf){
-		
+		select.setEnabled(true);
 		selected=false;
 		
 		select.setText("选择");
@@ -178,6 +190,9 @@ public class SelectOnePeople extends JPanel {
 		already=cf.selected;	//是否已经被别人选了
 		
 		if (already){
+			
+			select.setEnabled(false);
+			
 			System.out.println("选择者是:"+cf.who_select+"   我是:"+who_am_i);
 			who_sel=cf.who_select;
 			

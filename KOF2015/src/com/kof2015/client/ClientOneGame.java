@@ -17,7 +17,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import com.common.FighterInfo;
+import com.common.FighterInstance;
 import com.common.Message;
+import com.kof2015.battle.BattlePanel;
 
 
 public class ClientOneGame implements Runnable{
@@ -27,7 +29,7 @@ public class ClientOneGame implements Runnable{
 	
 
 	
-	volatile int canSel;
+	volatile static int canSel;
 	volatile String givePanelMe,givePanelOpp;
 	volatile ChooseFighter[] acf;
 	
@@ -43,9 +45,23 @@ public class ClientOneGame implements Runnable{
 	
 	JFrame jf_formation;
 	
+	JFrame frame_battle;
+	
 	SelectPanel sp;
 	
-	int round;	//add
+	
+	
+	
+	
+	
+	
+	BattlePanel bp_total;
+	FighterInstance []p1_f;
+	FighterInstance []p2_f;
+	
+	volatile String battle_show;
+	volatile Message foruse;
+	
 	
 	public ClientOneGame(JFrame jf,String serverIp,String nickName){
 		this.jf_login=jf;
@@ -56,7 +72,7 @@ public class ClientOneGame implements Runnable{
 		canSel=0;
 		msg_list=new Vector<Message>();
 		
-		round=0;
+		
 	}
 	
 	class Show_OptionPane implements Runnable{
@@ -70,6 +86,17 @@ public class ClientOneGame implements Runnable{
 			JOptionPane.showMessageDialog(jf_login, con, cap, JOptionPane.INFORMATION_MESSAGE);
 		}
 		
+	}
+	
+	public void getP1P2fromMessage(FighterInstance[] f){
+		if (p1_f==null)
+			p1_f=new FighterInstance[6];
+		if (p2_f==null)
+			p2_f=new FighterInstance[6];
+		for (int i=0;i<6;i++){
+			p1_f[i]=f[i];
+			p2_f[i]=f[i+6];
+		}
 	}
 	
 	class Handle_Msg_Thread implements Runnable{
@@ -156,6 +183,70 @@ public class ClientOneGame implements Runnable{
 						break;
 					case 4:
 						//the battle!!!!
+						System.out.println(msg.i_info1);
+						
+						
+						
+						switch(msg.i_info1){
+						case -2:
+							//the battle starts!
+							getP1P2fromMessage(msg.fi_b);
+							battle_show=msg.s_info1;
+							Battle_Method();
+							break;
+						case -1:
+							//turn starts
+							int whos_turn=msg.i_info2;
+							battle_show=msg.s_info1;
+							getP1P2fromMessage(msg.fi_b);
+							if (whos_turn==what_i){
+								MyTurnStart();
+							}
+							else{
+								OtherTurnStart();
+							}
+							break;
+						case 0:
+							// power
+							whos_turn=msg.i_info2;
+							battle_show=msg.s_info1;
+							getP1P2fromMessage(msg.fi_b);
+							if (whos_turn==what_i){
+								MyTurnProcessWithPower();
+							}
+							else{
+								OtherTurnProcessWithPower();
+							}
+							break;
+						case 1:
+							// normal
+							whos_turn=msg.i_info2;
+							battle_show=msg.s_info1;
+							getP1P2fromMessage(msg.fi_b);
+							
+							
+							for (FighterInstance fi1:msg.fi_b){
+								System.out.println("看一下:"+fi1.base.name+" "+fi1.hp+" "+fi1.max_hp);
+							}
+							
+							
+							
+							foruse=msg;
+							
+							if (whos_turn==what_i){
+								MyTurnProcessWithNormalAttack();
+							}
+							else{
+								OtherTurnProcessWithNormalAttack();
+							}
+							
+							break;
+						case 2:
+							//result
+							battle_show=msg.s_info1;
+							ShowResult();
+							break;
+						}
 						
 							
 					}
@@ -201,6 +292,88 @@ public class ClientOneGame implements Runnable{
 		new Thread(new Show_OptionPane("开始选牌", "已与对手["+challenger+"]连接")).start();		
 	}
 	
+	public void ShowResult() {
+		bp_total.addLog(battle_show);
+		bp_total.repaint();
+		
+	}
+
+	public void OtherTurnProcessWithNormalAttack() {
+		bp_total.addLog(battle_show);
+		
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		bp_total.repaint();
+		
+	}
+
+	public void MyTurnProcessWithNormalAttack() {
+		bp_total.addLog(battle_show);
+		
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		
+		
+		bp_total.disableMyNormal(foruse.i_info3);	//using index
+		
+		bp_total.disableMyPower();
+		bp_total.repaint();
+		
+	}
+
+	public void OtherTurnProcessWithPower() {
+		
+		bp_total.addLog(battle_show);
+		
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		
+		bp_total.repaint();
+		
+	}
+
+	public void MyTurnProcessWithPower() {
+		bp_total.addLog(battle_show);
+		
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		
+		bp_total.repaint();
+		
+	}
+
+	public void OtherTurnStart() {
+		//it's easy to see we should disable all elements(除了简介) in the battlefield
+		bp_total.disableAll();
+		bp_total.addLog(battle_show);
+		
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		bp_total.repaint();
+		
+	}
+
+	public void MyTurnStart() {
+		//由于是start 所以可以enableMe 然后update决定一些不得enable的 回合中不会做这些事情
+		bp_total.enableMe();
+		bp_total.addLog(battle_show);
+		if (what_i==1)
+			bp_total.update(p1_f, p2_f);
+		else
+			bp_total.update(p2_f, p1_f);
+		bp_total.repaint();
+	}
+
 	public void begin_formation(FighterInfo[] fi) {
 		jf_formation = new JFrame();
 		FormationPanel testObject = new FormationPanel(this,challenger);
@@ -230,6 +403,12 @@ public class ClientOneGame implements Runnable{
 	}
 	
 	public void one_choose_me(){
+		
+		//需要 enable 可选
+		//写啊!!!  放在refreshAccordingtoCF里面了
+		
+		
+		
 		sp.addTexttoOpp(givePanelOpp);
 		sp.addTexttoMe(givePanelMe);
 		sp.refreshAccordingToCF(acf);
@@ -241,18 +420,17 @@ public class ClientOneGame implements Runnable{
 		sp.addTexttoMe(givePanelMe);
 		sp.refreshAccordingToCF(acf);
 		sp.repaint();
-		sp.addTexttoMe("倒计时5秒后将自动关闭此页面!!!!");
+		sp.addTexttoMe("倒计时3秒后将自动关闭此页面!!!!");
 		
 		Timer tm=new Timer();
 		TimerTask tt=new TimerTask() { 
 			@Override
             public void run() {
-				System.out.println("here!");
 				jf_select.setVisible(false);
 				jf_select.dispose();
             }
 		};
-		tm.schedule(tt, 5000);
+		tm.schedule(tt, 3000);
 		
 
 	}	
@@ -315,7 +493,14 @@ public class ClientOneGame implements Runnable{
 		sp.CardBelongsToMe(sel[0]);
 		if (count==2) sp.CardBelongsToMe(sel[1]);
 		
+		sp.disableAll();
+		
+		
 		sp.repaint();
+		
+		
+		
+		
 		
 		//now send the result to the server
 		Message msg_tell=new Message(2);
@@ -341,6 +526,67 @@ public class ClientOneGame implements Runnable{
 		try {
 			oos.writeUnshared(msg);
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Timer tm=new Timer();
+		TimerTask tt=new TimerTask() { 
+			@Override
+            public void run() {
+				System.out.println("here!");
+				jf_formation.setVisible(false);
+				jf_formation.dispose();
+            }
+		};
+		tm.schedule(tt, 3000);
+		
+	}
+	
+	
+	public void Battle_Method(){
+		
+		//第一次时候被调用
+		
+		frame_battle = new JFrame();
+		frame_battle.setTitle("【"+nickName+"】 vs 【"+challenger+"】!");
+		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		
+		
+		if (what_i==1)
+			bp_total=new BattlePanel(this,p1_f,p2_f);
+		else
+			bp_total=new BattlePanel(this,p2_f,p1_f);
+		frame_battle.add(bp_total);
+		frame_battle.pack();
+		frame_battle.setResizable(false);
+		
+		frame_battle.setVisible(true);
+	}
+	
+	public void verify_attack_actions(int atk_index,int atkd_index){
+		//SEND IT TO THE SERVER
+		Message msg=new Message(4);
+		msg.from=what_i;
+		msg.i_info1=1;	//normal attack
+		msg.i_info2=atk_index;
+		msg.i_info3=atkd_index;
+		try{
+			oos.writeUnshared(msg);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+	public void end_my_turn() {
+		Message msg=new Message(4);
+		msg.i_info1=2;
+		msg.from=what_i;
+		try{
+			oos.writeUnshared(msg);
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 		

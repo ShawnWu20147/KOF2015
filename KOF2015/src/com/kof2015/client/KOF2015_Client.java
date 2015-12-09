@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.common.Message;
-import com.kof2015.ui.BattlePanel;
+import com.kof2015.battle.BattlePanel;
 
 public class KOF2015_Client extends JFrame{
 	

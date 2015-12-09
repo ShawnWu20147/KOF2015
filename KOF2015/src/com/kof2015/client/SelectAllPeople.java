@@ -21,4 +21,10 @@ public class SelectAllPeople extends JPanel{
 		return sp;
 	}
 
+	public void disableAll(){
+		for (int i=0;i<16;i++){
+			sp[i].disableSelect();
+		}
+	}
+	
 }

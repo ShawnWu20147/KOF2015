@@ -1,4 +1,4 @@
-package com.kof2015.ui;
+package com.kof2015.battle;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,9 +10,11 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextArea;
 
 import com.common.FighterInstance;
 
@@ -45,11 +47,65 @@ public class BattlerPanel extends JPanel {
 	
 	boolean isme;
 	
-	public void updateHpandRage(int hp,int rage){
+	boolean canAction;
+	
+	FighterInstance myfi;
+	
+	
+	public void disableAll(){
+		disableAttack();
+		disableSkill();
+		//disableFace();
+	}
+	
+	public void disableAttack(){
+		attackButton.setEnabled(false);
+	}
+	
+	public void disableSkill(){
+		skillButton.setEnabled(false);
+	}
+	
+	public void enableAttack(){
+		attackButton.setEnabled(true);
+	}
+	
+	public void enableSkill(){
+		skillButton.setEnabled(true);
+	}
+	
+	public void disableFace(){
+		faceButton.setEnabled(false);
+	}
+	
+	public void enableFace(){
+		faceButton.setEnabled(true);
+	}
+	
+	public void addAttackButtonListener(ActionListener l){
+		attackButton.addActionListener(l);
+	}
+	
+	public void addSkillButtonListener(ActionListener l){
+		skillButton.addActionListener(l);
+	}
+	
+	
+	
+	
+	public void updateHpandRage(FighterInstance fi){
+		this.myfi=fi;
+		int hp=fi.hp;
+		int rage=fi.anger;
+		
+		
+		
 		hpProgress.setValue(hp);
 		rageProgress.setValue(rage);
 		
-		
+		if (rageProgress.getValue()<rageProgress.getMaximum()){
+			skillButton.setEnabled(false);
+		}
 		
 		
 		if (hp<=0){
@@ -63,6 +119,10 @@ public class BattlerPanel extends JPanel {
 			
 			faceButton.setIcon(new ImageIcon(pic_path));
 			rageProgress.setValue(0);
+			
+			disableAttack();
+			disableSkill();
+			disableFace();
 		}
 		
 		repaint();
@@ -70,6 +130,10 @@ public class BattlerPanel extends JPanel {
 	
 	
 	public BattlerPanel(FighterInstance fi,boolean me) {
+		this.myfi=fi;
+		
+		canAction=true;
+		
 		this.isme=me;
 		setLayout(new BorderLayout(5, 5));
 		
@@ -130,6 +194,8 @@ public class BattlerPanel extends JPanel {
 				}
 			});
 			
+			
+			
 			progressPanel = new JPanel();
 			progressPanel.setLayout(new GridLayout(0, 1, 2, 2));
 			{
@@ -138,7 +204,7 @@ public class BattlerPanel extends JPanel {
 				rageProgress.setMaximum(1000);
 				rageProgress.setValue(fi.anger);
 				
-				JProgressBar hpProgress = new JProgressBar();
+				hpProgress = new JProgressBar();
 				hpProgress.setForeground(Color.RED);
 				hpProgress.setMaximum(fi.max_hp);
 				hpProgress.setValue(fi.hp);
@@ -153,19 +219,55 @@ public class BattlerPanel extends JPanel {
 		controlPanel = new JPanel();
 		{
 			infoButton = new JButton();
-			infoButton.setText("¼ò½é");
+			infoButton.setText("×´Ì¬");
+			
+			
+			
+			
 			
 			attackButton = new JButton();
 			attackButton.setText("¹¥»÷");
+			if (!isme){
+				attackButton.setEnabled(false);
+			}
+			
 			
 			skillButton = new JButton();
 			skillButton.setText("´óÕÐ");
+			skillButton.setEnabled(false);
 			
 			controlPanel.add(infoButton);
 			controlPanel.add(attackButton);
 			controlPanel.add(skillButton);
 		}
 		add(controlPanel, BorderLayout.SOUTH);
+		
+		if (!isme)
+			infoButton.setEnabled(false);
+		
+		infoButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFrame jf=new JFrame();
+				jf.setTitle("¸ñ¶·¼Ò×´Ì¬");
+				JTextArea jt=new JTextArea();
+				jt.setEditable(false);
+				jt.setText(myfi.getStatus());
+				jf.add(jt);
+				jf.setLocationRelativeTo(infoButton);
+				jf.pack();
+				jf.setVisible(true);
+				
+			}
+		});
+		
+		
+		
+	
+		
+		
+		
 	}
 	
 	
@@ -180,5 +282,15 @@ public class BattlerPanel extends JPanel {
 	public void unselect()
 	{
 		faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
+	}
+
+	
+	
+
+	public void enableMe() {
+		enableAttack();
+		enableFace();
+		enableSkill();
+		
 	}
 }
