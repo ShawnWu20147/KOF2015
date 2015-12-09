@@ -490,7 +490,8 @@ public class ServerHandleOne implements Runnable {
 			fi_a.anger+=fi_a.base.base_attack_anger;
 			fi_d.anger+=fi_d.base.base_attacked_anger;
 			
-			if (fi_d.hp<0){
+			if (fi_d.hp<=0){
+				fi_d.anger=0;
 				info1+=fi_d.base.name+"倒下了!\n";
 				
 				fi_a.anger+=50;
@@ -576,6 +577,7 @@ public class ServerHandleOne implements Runnable {
 			fi_d.anger+=fi_d.base.base_attacked_anger;
 			
 			if (fi_d.hp<=0){
+				fi_d.anger=0;
 				info1+=fi_d.base.name+"倒下了!\n";
 				
 				fi_a.anger+=50;
@@ -669,6 +671,7 @@ public class ServerHandleOne implements Runnable {
 		
 		ta.hp-=dmg;
 		if (ta.hp<=0){
+			ta.anger=0;
 			kill+=ta.base.name+"倒下了\n";
 			ta.anger=0;
 			wo.anger+=50;
