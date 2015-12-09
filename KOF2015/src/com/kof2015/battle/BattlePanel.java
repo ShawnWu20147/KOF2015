@@ -143,8 +143,14 @@ public class BattlePanel extends JPanel {
 					}
 					if (count==1){
 						if (who_attacked>2 && opp_p[who_attacked-3].myfi.hp<=0){
-							JOptionPane.showMessageDialog(null, "此格斗家前面人已挂了,无法进行列杀!", "提示", JOptionPane.INFORMATION_MESSAGE);
-							return;
+							boolean valid=true;
+							for (int i=0;i<3;i++){
+								if (opp_p[i].myfi.hp>0) valid=false;
+							}
+							if (!valid){
+								JOptionPane.showMessageDialog(null, "此格斗家前面人已挂了,但是前排仍然有人，无法进行列杀!", "提示", JOptionPane.INFORMATION_MESSAGE);
+								return;
+							}
 						}
 					}
 					if (count==2){
