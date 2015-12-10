@@ -43,7 +43,7 @@ public class KOF2015 {
 		
 		//putFighterDatatoFile();
 		
-		System.out.println("---load all fighters succ, start working");
+		//System.out.println("---load all fighters succ, start working");
 		
 		ServerSocket ss=new ServerSocket(9798);
 		while (true){

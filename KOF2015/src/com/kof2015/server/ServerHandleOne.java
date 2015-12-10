@@ -249,7 +249,7 @@ public class ServerHandleOne implements Runnable {
 		//following are choose pai
 		double d1=Math.random();
 		
-		d1=0.2;
+		
 		
 		if (d1<0.5){
 			first_attack=1;
@@ -517,12 +517,16 @@ public class ServerHandleOne implements Runnable {
 			fi_a.anger+=fi_a.true_atk_anger;
 			fi_d.anger+=fi_d.true_atkd_anger;
 			
+			if (fi_a.fighter_type==1) fi_a.anger+=200;
+			if (fi_d.fighter_type==2) fi_d.anger+=150;
+			
+			
 			if (fi_d.hp<=0){
 				fi_d.isDead=true;
 				fi_d.anger=0;
 				info1+="\t"+fi_d.name+"倒下了!\n";
 				
-				fi_a.anger+=50;
+				fi_a.anger+=200;
 				
 			}
 			
@@ -632,12 +636,15 @@ public class ServerHandleOne implements Runnable {
 			fi_a.anger+=fi_a.true_atk_anger;
 			fi_d.anger+=fi_d.true_atkd_anger;
 			
+			if (fi_a.fighter_type==1) fi_a.anger+=200;
+			if (fi_d.fighter_type==2) fi_d.anger+=150;
+			
 			if (fi_d.hp<=0){
 				fi_d.anger=0;
 				fi_d.isDead=true;
 				info1+="\t"+fi_d.name+"倒下了!\n";
 				
-				fi_a.anger+=50;
+				fi_a.anger+=200;
 			}
 			
 			if (fi_a.anger>1000) fi_a.anger=1000;
@@ -720,7 +727,7 @@ public class ServerHandleOne implements Runnable {
 		
 		String des1="【"+attacker+"】的["+name+"]发动了必杀技------"+skill_name+"\n";
 		
-		int  dmg=(int) (wo.true_attack*rate*2-ta.true_defence*2);
+		int  dmg=(int) (wo.true_attack*rate*1.5-ta.true_defence*2);
 		
 		
 		int hit_rt=wo.true_hit;
@@ -758,7 +765,7 @@ public class ServerHandleOne implements Runnable {
 		
 		String kill="\t对【"+defencer+"】的["+ta.name+"造成了"+dmg+"的伤害\n";
 		
-		wo.anger+=wo.true_pw_anger;
+		//wo.anger+=wo.true_pw_anger;
 		ta.anger+=ta.true_pwd_anger;
 		
 		ta.hp-=dmg;
@@ -767,7 +774,7 @@ public class ServerHandleOne implements Runnable {
 			ta.anger=0;
 			kill+="\t"+ta.name+"倒下了\n";
 			ta.anger=0;
-			wo.anger+=50;
+			wo.anger+=200;
 		}
 		
 		if (wo.anger>1000) wo.anger=1000;
@@ -940,7 +947,7 @@ public class ServerHandleOne implements Runnable {
 					String log1="";
 					for (int i=0;i<3;i++){
 						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
-						for (int j=0;i<6;j++){
+						for (int j=0;j<6;j++){
 							if(p2_fi[j].hp>0) all_live.add(p2_fi[j]);
 						}
 						if (all_live.size()==0){
@@ -1123,7 +1130,7 @@ public class ServerHandleOne implements Runnable {
 					String log1="";
 					for (int i=0;i<3;i++){
 						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
-						for (int j=0;i<6;j++){
+						for (int j=0;j<6;j++){
 							if(p1_fi[j].hp>0) all_live.add(p1_fi[j]);
 						}
 						if (all_live.size()==0){
