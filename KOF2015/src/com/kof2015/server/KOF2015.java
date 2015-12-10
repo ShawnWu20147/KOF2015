@@ -1,9 +1,16 @@
 package com.kof2015.server;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
@@ -26,10 +33,16 @@ public class KOF2015 {
 	
 	ArrayList<FighterInfo> all_fighters;
 	
+	boolean fromDB=false;
+	
 	public KOF2015() throws IOException, InterruptedException, ClassNotFoundException{
 		db1 = new DBHelper();//create DBHelper
 		all_fighters=new ArrayList<FighterInfo>();
-		load_all_fighters();
+		
+		load_all_fighters(fromDB);
+		
+		//putFighterDatatoFile();
+		
 		System.out.println("---load all fighters succ, start working");
 		
 		ServerSocket ss=new ServerSocket(9798);
@@ -84,7 +97,26 @@ public class KOF2015 {
 	}
 	
 	
-	private void load_all_fighters() {
+	private void load_all_fighters(boolean fromDB) {
+		if (!fromDB){
+			File f=new File("all_fighters");
+			if (!f.exists())
+				f=new File("../all_fighters");
+			try {
+				ObjectInputStream ois=new ObjectInputStream(new FileInputStream(f));
+				all_fighters=(ArrayList<FighterInfo>) ois.readObject();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println("get from files over");
+			return;
+			
+		}
 		String query="select * from fighter";
 		ret=db1.executeOneQuery(query);
 		try {
@@ -122,8 +154,30 @@ public class KOF2015 {
 		
 	}
 
+	public void putFighterDatatoFile(){
+		File f=new File("all_fighters");
+		FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(f);
+			ObjectOutputStream oos=new ObjectOutputStream(fos);
+			oos.writeObject(all_fighters);
+			
+			oos.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 
 	public static void main(String[] args) throws Exception{     
+
 		new KOF2015();
 	}  
 }

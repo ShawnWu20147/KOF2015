@@ -109,7 +109,7 @@ public class SelectOnePeople extends JPanel {
 		add(jl_pic);	
 		JPanel nj=new JPanel();
 		nj.add(select);
-		//nj.add(intro);
+		nj.add(intro);
 		add(nj);
 		
 		select.addActionListener(new ActionListener() {
