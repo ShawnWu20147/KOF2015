@@ -872,7 +872,7 @@ public class ServerHandleOne implements Runnable {
 						fi1.hp+=restore;
 						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
 						int true_res=fi1.hp-orig;
-						log1+="\t【"+name1+"】的["+wo+"]对["+fi1.name+"]进行回血:"+true_res+"\n";
+						log1+="\t【"+name1+"】的["+wo.name+"]对["+fi1.name+"]进行回血:"+true_res+"\n";
 						
 					}
 					sendPowerResult(log1, 1, atk_id);
@@ -1042,6 +1042,7 @@ public class ServerHandleOne implements Runnable {
 					String log1="";
 					for (int i=0;i<6;i++){
 						FighterInstance fi1=p2_fi[i];
+						if (fi1.hp<=0) continue;
 						int orig=fi1.hp;
 						int restore= (int) (wo.true_attack*wo.true_skill_ratio);
 						
@@ -1056,7 +1057,7 @@ public class ServerHandleOne implements Runnable {
 						fi1.hp+=restore;
 						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
 						int true_res=fi1.hp-orig;
-						log1+="\t【"+name2+"】的["+wo+"]对["+fi1.name+"]进行回血"+true_res+"\n";
+						log1+="\t【"+name2+"】的["+wo.name+"]对["+fi1.name+"]进行回血"+true_res+"\n";
 					}
 					sendPowerResult(log1, 2, atk_id);
 				}
