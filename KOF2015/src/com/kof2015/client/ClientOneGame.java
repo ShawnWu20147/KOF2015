@@ -23,6 +23,8 @@ import com.common.FighterInfo;
 import com.common.FighterInstance;
 import com.common.Message;
 import com.kof2015.battle.BattlePanel;
+import com.kof2015.battle.BattlerPanel;
+import com.kof2015.battle.TroopPanel;
 
 
 public class ClientOneGame implements Runnable{
@@ -312,9 +314,9 @@ public class ClientOneGame implements Runnable{
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.update(p1_f, p2_f,true);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.update(p2_f, p1_f,true);
 		bp_total.repaint();
 		
 	}
@@ -324,12 +326,36 @@ public class ClientOneGame implements Runnable{
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
+		//需要禁掉自己人的所有行为,刷新完成后再恢复
+		// troopLeft.disableForSafe
+		// troopRight.enableForSafe
+		BattlerPanel []all_my_bp=bp_total.my_p;
+		boolean []res=new boolean[6];
+		for (int i=0;i<6;i++){
+			all_my_bp[i].disableSkill();	//of course, since it conducts normal attack
+			res[i]=all_my_bp[i].attackButton.isEnabled();
+			all_my_bp[i].attackButton.setEnabled(false);
+		}
+		
+		
+		
+		
+		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.update(p1_f, p2_f,true);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.update(p2_f, p1_f,true);
 		
 		System.out.println(foruse.i_info3+"的行动结束了");
+		
+		
+		
+		for (int i=0;i<6;i++){
+			if (res[i])
+				all_my_bp[i].attackButton.setEnabled(true);
+		}
+		
+		
 		bp_total.disableMyNormal(foruse.i_info3);	//using index
 		
 		bp_total.disableMyPower();
@@ -342,9 +368,9 @@ public class ClientOneGame implements Runnable{
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.update(p1_f, p2_f,true);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.update(p2_f, p1_f,true);
 		
 		bp_total.repaint();
 		
@@ -354,10 +380,42 @@ public class ClientOneGame implements Runnable{
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
+		
+
+		BattlerPanel []all_my_bp=bp_total.my_p;
+		boolean []res_atk=new boolean[6];
+		boolean []res_pw=new boolean[6];
+		for (int i=0;i<6;i++){
+			
+			all_my_bp[i].attackButton.setEnabled(false);
+			
+			res_pw[i]=all_my_bp[i].skillButton.isEnabled();
+			
+			all_my_bp[i].disableSkill();
+			
+
+		}
+		
+		
+		
+		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.update(p1_f, p2_f,true);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.update(p2_f, p1_f,true);
+		
+		
+		for (int i=0;i<6;i++){
+			if (all_my_bp[i].myfi.hp>0)
+				all_my_bp[i].attackButton.setEnabled(true);
+			if (res_pw[i]){
+				System.out.println("有机会恢复:"+i);
+				//原来可以放大招的 才有机会恢复
+				all_my_bp[i].restoreRageEnabled();
+			}
+		}
+		
+		
 		
 		bp_total.repaint();
 		
@@ -370,9 +428,9 @@ public class ClientOneGame implements Runnable{
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f);
+			bp_total.update(p1_f, p2_f,false);
 		else
-			bp_total.update(p2_f, p1_f);
+			bp_total.update(p2_f, p1_f,false);
 		bp_total.repaint();
 		
 	}

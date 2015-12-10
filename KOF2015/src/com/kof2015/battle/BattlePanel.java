@@ -38,7 +38,7 @@ public class BattlePanel extends JPanel {
 	
 	JButton end_my_turn;
 	
-	BattlerPanel []my_p;
+	public BattlerPanel []my_p;
 	BattlerPanel []opp_p;
 	
 
@@ -278,10 +278,31 @@ public class BattlePanel extends JPanel {
 		infoArea.append(a);
 	}
 	
-	public void update(FighterInstance []self,FighterInstance[] opp){
-		troopLeft.update(self, true);
-		troopRight.update(opp, false);
-		repaint();
+	public void update(FighterInstance []self,FighterInstance[] opp,boolean some_damage){
+		if (!some_damage){
+			troopLeft.update(self, true);
+			troopRight.update(opp, false);
+			repaint();
+		}
+		else{
+			//hehe
+			Thread []t=new Thread[12];
+			for (int i=0;i<6;i++){
+				RefreshHPAnimation rha_self=new RefreshHPAnimation(my_p[i], self[i]);
+				RefreshHPAnimation rha_other=new RefreshHPAnimation(opp_p[i], opp[i]);
+				t[i]=new Thread(rha_self);
+				t[i+6]=new Thread(rha_other);
+			}
+			for (int i=0;i<12;i++) t[i].start();
+			for (int i=0;i<12;i++)
+				try {
+					t[i].join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			
+			//over
+		}
 	}
 	
 	public void updateMyTurn(FighterInstance []self,FighterInstance[] opp){

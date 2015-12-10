@@ -47,8 +47,10 @@ public class TroopPanel extends JPanel {
 	
 	public void updateMe(FighterInstance[] one,boolean self){
 		for (int i=0;i<6;i++){
-			if (self)
+			if (self){
 				bp[i].updateHpandRage(one[i]);
+			}
+				
 			else
 				bp[i].updateHpandRage(one[i]);
 			bp[i].updateRage(one[i]);

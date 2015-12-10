@@ -41,15 +41,15 @@ public class BattlerPanel extends JPanel {
 	
 	JButton infoButton;
 	
-	JButton attackButton;
+	public JButton attackButton;
 	
-	JButton skillButton;
+	public JButton skillButton;
 	
 	boolean isme;
 	
 	boolean canAction;
 	
-	FighterInstance myfi;
+	public FighterInstance myfi;
 	
 
 	
@@ -97,6 +97,94 @@ public class BattlerPanel extends JPanel {
 			skillButton.setEnabled(true);
 		}
 	}
+	
+	public void updateHpandRagewithAnimation(FighterInstance fi){
+		
+		
+		
+		FighterInstance old=myfi;
+		int old_hp=old.hp;
+		if (old_hp<=0) return;
+		
+		
+		
+		int new_hp=fi.hp;
+		
+		if (new_hp<=0){
+			new_hp=0;
+			int gap=new_hp-old_hp;
+			int change=gap/25;
+			//  gap=100 change =4
+			
+			int cur=old_hp;
+			for (int i=0;i<25;i++){
+				cur+=change;
+				hpProgress.setValue(cur);
+				try {
+					Thread.currentThread().sleep(40);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			hpProgress.setValue(0);
+			
+			
+			isClicked=false;
+			faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
+			
+			String pic_path="img/battler/dead.jpg";
+			File f=new File(pic_path);
+			if (!f.exists()){
+				pic_path="../img/battler/dead.jpg";
+			}
+			faceButton.setIcon(new ImageIcon(pic_path));
+			rageProgress.setValue(0);
+			disableAttack();
+			disableSkill();
+			disableFace();
+			myfi=fi;
+		}
+		
+		else{
+			int old_anger=old.anger;
+			int new_anger=fi.anger;
+			if (old_anger>=1000) old_anger=1000;
+			if (new_anger>=1000) new_anger=1000;
+			
+			
+			int gap_hp=new_hp-old_hp;
+			int gap_anger=new_anger-old_anger;
+			
+			int change_hp=gap_hp/25;
+			int change_anger=gap_anger/25;
+			
+			int cur_hp=old_hp;
+			int cur_anger=old_anger;
+			for (int i=0;i<25;i++){
+				cur_hp+=change_hp;
+				cur_anger+=change_anger;
+				hpProgress.setValue(cur_hp);
+				rageProgress.setValue(cur_anger);
+				try {
+					Thread.currentThread().sleep(40);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			hpProgress.setValue(new_hp);
+			rageProgress.setValue(new_anger);
+			myfi=fi;
+			
+			if (rageProgress.getValue()<rageProgress.getMaximum()){
+				skillButton.setEnabled(false);
+			}
+			
+		}
+		
+		
+		
+	}
+	
 	
 	public void updateHpandRage(FighterInstance fi){
 		this.myfi=fi;
@@ -297,6 +385,12 @@ public class BattlerPanel extends JPanel {
 		enableAttack();
 		enableFace();
 		enableSkill();
+		
+	}
+
+	public void restoreRageEnabled() {
+		if (myfi.anger>=1000)
+			enableSkill();
 		
 	}
 
