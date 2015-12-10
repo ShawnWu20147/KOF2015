@@ -164,10 +164,10 @@ public class BattlerPanel extends JPanel {
 		add(statusPanel, BorderLayout.EAST);
 		
 		
-		String pic_path="img/battler/" + fi.base.id + ".jpg";
+		String pic_path="img/battler/" + fi.id + ".jpg";
 		File f=new File(pic_path);
 		if (!f.exists()){
-			pic_path="../img/battler/" + fi.base.id + ".jpg";
+			pic_path="../img/battler/" + fi.id + ".jpg";
 		}
 		
 		

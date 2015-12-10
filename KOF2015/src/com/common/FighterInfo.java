@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class FighterInfo implements Serializable{
 	public int id;
 	public String name;
-	public int ability;
-	public int fighter_type;
+	public int ability;			//never change
+	public int fighter_type;	//never change
 	public int base_hp;
 	public int base_attack;
 	public int base_defence;
@@ -108,14 +108,14 @@ public class FighterInfo implements Serializable{
 
 	private String getPowerType(int skill_type2) {
 		switch(skill_type2){
-		case 0: return "单列杀";
-		case 1: return "单体杀";
-		case 2: return "AOE";
+		case 0: return "横杀";
+		case 1: return "单杀.前";
+		case 2: return "全屏杀";
 		case 3: return "全体回血";
-		case 4: return "攻击前排全部";
-		case 5: return "攻击后排全部";
-		case 6: return "攻击后排单人";
-		case 7: return "随机攻击3人";
+		case 4: return "竖杀.前";
+		case 5: return "竖杀.后";
+		case 6: return "单杀.后";
+		case 7: return "随机杀.(3人)";
 		}
 		return null;
 	}

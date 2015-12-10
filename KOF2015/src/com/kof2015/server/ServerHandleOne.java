@@ -161,11 +161,12 @@ public class ServerHandleOne implements Runnable {
 						assert(fi.length==6);
 						if (toh.from==1){
 							p1_fi=new FighterInstance[6];
+							//前排血量提高20%  后排攻击加50
 							for (int i=0;i<6;i++){
 								if (i<=2)
-									p1_fi[i]=new FighterInstance(fi[i], 0.2);
+									p1_fi[i]=new FighterInstance(fi[i], 0.2,0);
 								else
-									p1_fi[i]=new FighterInstance(fi[i], 0);
+									p1_fi[i]=new FighterInstance(fi[i], 0,50);
 							}
 							System.out.println("【"+name1+"】布阵完毕!");
 							p1_format_over=true;
@@ -177,9 +178,9 @@ public class ServerHandleOne implements Runnable {
 							p2_fi=new FighterInstance[6];
 							for (int i=0;i<6;i++){
 								if (i<=2)
-									p2_fi[i]=new FighterInstance(fi[i], 0.2);
+									p2_fi[i]=new FighterInstance(fi[i], 0.2,0);
 								else
-									p2_fi[i]=new FighterInstance(fi[i], 0);
+									p2_fi[i]=new FighterInstance(fi[i], 0,50);
 								
 							}
 							System.out.println("【"+name1+"】布阵完毕!");
@@ -447,7 +448,7 @@ public class ServerHandleOne implements Runnable {
 		addFIBtoMsg(msg);
 		
 		for (int i=0;i<12;i++){
-			System.out.println(msg.fi_b[i].base.name);
+			System.out.println(msg.fi_b[i].name);
 		}
 		
 		try{
@@ -482,17 +483,44 @@ public class ServerHandleOne implements Runnable {
 			FighterInstance fi_a=p1_fi[atk_id];
 			FighterInstance fi_d=p2_fi[atkd_id];
 			
-			int dmg=fi_a.base.base_attack-fi_d.base.base_defence;
-			String info1="【"+name1+"】的["+fi_a.base.name+"]对【"+name2+"】的["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			String condition="";
+			
+			int hit_rt=fi_a.true_hit;
+			int block_rt=fi_d.true_block;
+			
+			int dmg=fi_a.true_attack*2-fi_d.true_defence;
+			
+			int first_block=(int) (Math.random()*100);
+			if (first_block<=block_rt){
+				condition+="\t格挡!";
+				int how_much=(int) (Math.random()*50)+25;
+				condition+="格挡住"+how_much+"%的伤害\n";
+				dmg=(int) (dmg*(1- how_much/100.0));
+			}
+			else{
+				//判断暴击
+				int second_hit=(int) (Math.random()*100);
+				if (second_hit<=hit_rt){
+					condition+="\t暴击!";
+					int how_much=(int) (Math.random()*50)+25;
+					condition+="暴击造成额外"+how_much+"%的伤害\n";
+					dmg=(int) (dmg*(1+ how_much/100.0));
+				}
+			}
+			
+			String info1="【"+name1+"】的["+fi_a.name+"]对【"+name2+"】的["+fi_d.name+"]发动了普通攻击\n";
+			String info3=info1+condition+"\t本次攻击造成了"+dmg+"的伤害\n";
+			
 			fi_d.hp-=dmg;
 			
 			
-			fi_a.anger+=fi_a.base.base_attack_anger;
-			fi_d.anger+=fi_d.base.base_attacked_anger;
+			fi_a.anger+=fi_a.true_atk_anger;
+			fi_d.anger+=fi_d.true_atkd_anger;
 			
 			if (fi_d.hp<=0){
+				fi_d.isDead=true;
 				fi_d.anger=0;
-				info1+=fi_d.base.name+"倒下了!\n";
+				info1+="\t"+fi_d.name+"倒下了!\n";
 				
 				fi_a.anger+=50;
 				
@@ -510,7 +538,7 @@ public class ServerHandleOne implements Runnable {
 			
 			msg_1.i_info3=atk_id;	//attacker's id
 			
-			msg_1.s_info1=info1;	//show info
+			msg_1.s_info1=info3;	//show info
 			
 			addFIBtoMsg(msg_1);
 			
@@ -569,16 +597,45 @@ public class ServerHandleOne implements Runnable {
 			fi_a=p2_fi[atk_id];
 			fi_d=p1_fi[atkd_id];
 			
-			dmg=fi_a.base.base_attack-fi_d.base.base_defence;
-			info1="【"+name2+"】的["+fi_a.base.name+"]对【"+name1+"】的["+fi_d.base.name+"]造成了"+dmg+"的伤害\n";
+			hit_rt=fi_a.true_hit;
+			block_rt=fi_d.true_block;
+			
+			dmg=fi_a.true_attack*2-fi_d.true_defence;
+			
+			condition="";
+			
+			first_block=(int) (Math.random()*100);
+			if (first_block<=block_rt){
+				condition+="\t格挡!";
+				int how_much=(int) (Math.random()*50)+25;
+				condition+="格挡住"+how_much+"%的伤害\n";
+				dmg=(int) (dmg*(1- how_much/100.0));
+			}
+			else{
+				//判断暴击
+				int second_hit=(int) (Math.random()*100);
+				if (second_hit<=hit_rt){
+					condition+="\t暴击!";
+					int how_much=(int) (Math.random()*50)+25;
+					condition+="暴击造成额外"+how_much+"%的伤害\n";
+					dmg=(int) (dmg*(1+ how_much/100.0));
+				}
+			}
+			
+
+			info1="【"+name2+"】的["+fi_a.name+"]对【"+name1+"】的["+fi_d.name+"]发动了普通攻击\n";
+			info3=info1+condition+"\t本次攻击造成了"+dmg+"的伤害\n";
+			
+			
 			fi_d.hp-=dmg;
 			
-			fi_a.anger+=fi_a.base.base_attack_anger;
-			fi_d.anger+=fi_d.base.base_attacked_anger;
+			fi_a.anger+=fi_a.true_atk_anger;
+			fi_d.anger+=fi_d.true_atkd_anger;
 			
 			if (fi_d.hp<=0){
 				fi_d.anger=0;
-				info1+=fi_d.base.name+"倒下了!\n";
+				fi_d.isDead=true;
+				info1+="\t"+fi_d.name+"倒下了!\n";
 				
 				fi_a.anger+=50;
 			}
@@ -595,14 +652,14 @@ public class ServerHandleOne implements Runnable {
 			msg_2.i_info1=1;		//normal attack
 			msg_2.i_info2=2;		//whose turn
 			
-			msg_2.s_info1=info1;
+			msg_2.s_info1=info3;
 			
 			msg_2.i_info3=atk_id;
 			
 			addFIBtoMsg(msg_2);
 			
 			for (int i=0;i<12;i++){
-				System.out.println("攻击后:"+msg_2.fi_b[i].base.name+" "+msg_2.fi_b[i].hp);
+				System.out.println("攻击后:"+msg_2.fi_b[i].name+" "+msg_2.fi_b[i].hp);
 			}
 			
 			msg_2.s_info2="debug";
@@ -657,28 +714,64 @@ public class ServerHandleOne implements Runnable {
 	}
 	
 	public String generateInfo(String attacker,FighterInstance wo,String defencer,FighterInstance ta){
-		String name=wo.base.name;
-		String skill_name=wo.base.skill_name;
-		double rate=wo.base.skill_ratio;
+		String name=wo.name;
+		String skill_name=wo.skill_name;
+		double rate=wo.true_skill_ratio;
 		
 		String des1="【"+attacker+"】的["+name+"]发动了必杀技------"+skill_name+"\n";
 		
-		int  dmg=(int) (wo.base.base_attack*rate-ta.base.base_defence);
-		String kill="对【"+defencer+"】的["+ta.base.name+"造成了"+dmg+"的伤害\n";
+		int  dmg=(int) (wo.true_attack*rate*2-ta.true_defence*2);
 		
-		wo.anger+=wo.base.base_power_anger;
-		ta.anger+=ta.base.base_powered_anger;
+		
+		int hit_rt=wo.true_hit;
+		int block_rt=ta.true_block;
+		
+		
+		
+		String condition="";
+		
+		int first_block=(int) (Math.random()*100);
+		if (first_block<=block_rt){
+			condition+="\t大招被格挡!";
+			int how_much=(int) (Math.random()*50)+25;
+			condition+="格挡住"+how_much+"%的伤害\n";
+			dmg=(int) (dmg*(1- how_much/100.0));
+		}
+		else{
+			//判断暴击
+			int second_hit=(int) (Math.random()*100);
+			if (second_hit<=hit_rt){
+				condition+="\t大招暴击!";
+				int how_much=(int) (Math.random()*50)+25;
+				condition+="暴击造成额外"+how_much+"%的伤害\n";
+				dmg=(int) (dmg*(1+ how_much/100.0));
+			}
+		}
+		
+
+
+		
+		
+		
+		
+		
+		
+		String kill="\t对【"+defencer+"】的["+ta.name+"造成了"+dmg+"的伤害\n";
+		
+		wo.anger+=wo.true_pw_anger;
+		ta.anger+=ta.true_pwd_anger;
 		
 		ta.hp-=dmg;
 		if (ta.hp<=0){
+			ta.isDead=true;
 			ta.anger=0;
-			kill+=ta.base.name+"倒下了\n";
+			kill+="\t"+ta.name+"倒下了\n";
 			ta.anger=0;
 			wo.anger+=50;
 		}
 		
 		if (wo.anger>1000) wo.anger=1000;
-		return des1+kill;
+		return des1+condition+kill;
 		
 	}
 	
@@ -686,7 +779,7 @@ public class ServerHandleOne implements Runnable {
 		switch(from_who){
 		case 1:
 			FighterInstance wo=p1_fi[atk_id];
-			int skill_type=wo.base.skill_type;
+			int skill_type=wo.skill_type_i;
 			wo.anger=0;
 			
 			switch(skill_type){
@@ -760,11 +853,20 @@ public class ServerHandleOne implements Runnable {
 						FighterInstance fi1=p1_fi[i];
 						if (fi1.hp<=0) continue;
 						int orig=fi1.hp;
-						int restore= (int) (wo.base.base_attack*wo.base.skill_ratio);
+						int restore= (int) (wo.true_attack*wo.true_skill_ratio*1.5);
+
+						int hit=wo.true_hit;
+						int restore_baoji=(int) (Math.random()*100);
+						if (restore_baoji<=hit){
+							int how_much=(int) (Math.random()*50)+25;
+							restore=(int) (restore*(1+how_much/100.0));
+						}
+						
 						fi1.hp+=restore;
 						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
 						int true_res=fi1.hp-orig;
-						log1+="【"+name1+"】的["+fi1.base.name+"]回血"+true_res+"\n";
+						log1+="\t【"+name1+"】的["+wo+"]对["+fi1.name+"]进行回血:"+true_res+"\n";
+						
 					}
 					sendPowerResult(log1, 1, atk_id);
 				}
@@ -861,7 +963,7 @@ public class ServerHandleOne implements Runnable {
 		case 2:
 
 			wo=p2_fi[atk_id];
-			skill_type=wo.base.skill_type;
+			skill_type=wo.skill_type_i;
 			wo.anger=0;
 			
 			switch(skill_type){
@@ -934,11 +1036,20 @@ public class ServerHandleOne implements Runnable {
 					for (int i=0;i<6;i++){
 						FighterInstance fi1=p2_fi[i];
 						int orig=fi1.hp;
-						int restore= (int) (wo.base.base_attack*wo.base.skill_ratio);
+						int restore= (int) (wo.true_attack*wo.true_skill_ratio);
+						
+						
+						int hit=wo.true_hit;
+						int restore_baoji=(int) (Math.random()*100);
+						if (restore_baoji<=hit){
+							int how_much=(int) (Math.random()*50)+25;
+							restore=(int) (restore*(1+how_much/100.0));
+						}
+						
 						fi1.hp+=restore;
 						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
 						int true_res=fi1.hp-orig;
-						log1+="【"+name2+"】的["+fi1.base.name+"]回血"+true_res+"\n";
+						log1+="\t【"+name2+"】的["+wo+"]对["+fi1.name+"]进行回血"+true_res+"\n";
 					}
 					sendPowerResult(log1, 2, atk_id);
 				}
@@ -1142,7 +1253,7 @@ public class ServerHandleOne implements Runnable {
 			msg_round1.i_info2=first_attack;
 			addFIBtoMsg(msg_round1);	
 			
-			for (int i=0;i<12;i++) System.out.println(msg_round1.fi_b[i].base.name);
+			for (int i=0;i<12;i++) System.out.println(msg_round1.fi_b[i].name);
 			
 			if (first_attack==1){
 				msg_round1.s_info1="你【"+name1+"】的回合开始\n";

@@ -229,7 +229,7 @@ public class ClientOneGame implements Runnable{
 							
 							
 							for (FighterInstance fi1:msg.fi_b){
-								System.out.println("看一下:"+fi1.base.name+" "+fi1.hp+" "+fi1.max_hp);
+								System.out.println("看一下:"+fi1.name+" "+fi1.hp+" "+fi1.max_hp);
 							}
 							
 							
@@ -296,6 +296,10 @@ public class ClientOneGame implements Runnable{
 	}
 	
 	public void ShowResult() {
+		
+		JOptionPane.showMessageDialog(jf_login, battle_show, "提示", JOptionPane.INFORMATION_MESSAGE);
+		
+		
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		bp_total.repaint();

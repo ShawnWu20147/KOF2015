@@ -117,7 +117,7 @@ public class BattlePanel extends JPanel {
 					}
 				}
 				
-				System.out.println(who_attack+" "+my_p[who_attack].myfi.base.name+"放大招了");
+				System.out.println(who_attack+" "+my_p[who_attack].myfi.name+"放大招了");
 				
 				int count=0;
 				int who_attacked=0;
@@ -129,12 +129,12 @@ public class BattlePanel extends JPanel {
 				}
 				FighterInstance fi=my_p[who_attack].myfi;
 				assert(fi.anger>=1000);
-				int skill_type=fi.base.skill_type;
+				int skill_type=fi.skill_type_i;
 				switch(skill_type){
 				case 0:
 					//列杀
 					if (count>=3){
-						JOptionPane.showMessageDialog(null, "请选最多2个同列角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "请选最多2个横排角色!", "提示", JOptionPane.INFORMATION_MESSAGE);
 						return;
 					}
 					if (count==0){
@@ -345,11 +345,13 @@ public class BattlePanel extends JPanel {
 	
 	FighterInstance []fi_opp=new FighterInstance[6];
 	
+	/*
 	for (int i=0;i<6;i++){
 		fi_me[i]=new FighterInstance(all_fighters.get(i), 0);
 		fi_opp[i]=new FighterInstance(all_fighters.get(i+6), 0);
 	}
-		
+	*/
+	
 		
 		
 		
