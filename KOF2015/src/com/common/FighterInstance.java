@@ -122,7 +122,7 @@ public class FighterInstance implements Serializable{
 		if (this.fighter_type==0)
 			anger=300;
 		else
-			anger=900;
+			anger=0;
 		
 		
 		isDead=false;

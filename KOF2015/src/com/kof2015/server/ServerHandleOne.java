@@ -956,7 +956,7 @@ public class ServerHandleOne implements Runnable {
 						}
 						int sz=all_live.size();
 						int who_luck=(int)(Math.random()*sz);
-						FighterInstance fi1=p2_fi[who_luck];
+						FighterInstance fi1=all_live.get(who_luck);
 						log1+=generateInfo(name1, wo, name2, fi1);
 					}
 					
@@ -1140,7 +1140,7 @@ public class ServerHandleOne implements Runnable {
 						}
 						int sz=all_live.size();
 						int who_luck=(int)(Math.random()*sz);
-						FighterInstance fi1=p1_fi[who_luck];
+						FighterInstance fi1=all_live.get(who_luck);
 						log1+=generateInfo(name2, wo, name1, fi1);
 					}
 					

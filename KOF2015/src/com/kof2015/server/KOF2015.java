@@ -33,7 +33,7 @@ public class KOF2015 {
 	
 	ArrayList<FighterInfo> all_fighters;
 	
-	boolean fromDB=false;
+	boolean fromDB=true;
 	
 	public KOF2015() throws IOException, InterruptedException, ClassNotFoundException{
 		db1 = new DBHelper();//create DBHelper
@@ -43,7 +43,7 @@ public class KOF2015 {
 		
 		//putFighterDatatoFile();
 		
-		//System.out.println("---load all fighters succ, start working");
+		System.out.println("---load all fighters succ, start working");
 		
 		ServerSocket ss=new ServerSocket(9798);
 		while (true){
