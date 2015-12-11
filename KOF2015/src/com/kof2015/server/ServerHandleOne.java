@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Vector;
 
+import com.common.Constants;
 import com.common.FighterInfo;
 import com.common.FighterInstance;
 import com.common.Message;
@@ -178,9 +179,9 @@ public class ServerHandleOne implements Runnable {
 							p2_fi=new FighterInstance[6];
 							for (int i=0;i<6;i++){
 								if (i<=2)
-									p2_fi[i]=new FighterInstance(fi[i], 0.2,0);
+									p2_fi[i]=new FighterInstance(fi[i], Constants.FRONT_HP_BONUS,0);
 								else
-									p2_fi[i]=new FighterInstance(fi[i], 0,50);
+									p2_fi[i]=new FighterInstance(fi[i], 0,Constants.BACK_ATTACK_BOUNS);
 								
 							}
 							System.out.println("【"+name1+"】布阵完毕!");
@@ -488,12 +489,15 @@ public class ServerHandleOne implements Runnable {
 			int hit_rt=fi_a.true_hit;
 			int block_rt=fi_d.true_block;
 			
-			int dmg=fi_a.true_attack*2-fi_d.true_defence;
+			int dmg=(int) (fi_a.true_attack*Constants.NORMAL_ATTACK_MODIFY-fi_d.true_defence*Constants.NORMAL_DEFENCE_MODIFY);
 			
 			int first_block=(int) (Math.random()*100);
 			if (first_block<=block_rt){
 				condition+="\t格挡!";
-				int how_much=(int) (Math.random()*50)+25;
+				
+				int mul=Constants.NORMAL_BLOCK_MAX-Constants.NORMAL_BLOCK_MIN;
+				
+				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
 				condition+="格挡住"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1- how_much/100.0));
 			}
@@ -502,7 +506,10 @@ public class ServerHandleOne implements Runnable {
 				int second_hit=(int) (Math.random()*100);
 				if (second_hit<=hit_rt){
 					condition+="\t暴击!";
-					int how_much=(int) (Math.random()*50)+25;
+					
+					int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
+					
+					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
 					condition+="暴击造成额外"+how_much+"%的伤害\n";
 					dmg=(int) (dmg*(1+ how_much/100.0));
 				}
@@ -517,8 +524,8 @@ public class ServerHandleOne implements Runnable {
 			fi_a.anger+=fi_a.true_atk_anger;
 			fi_d.anger+=fi_d.true_atkd_anger;
 			
-			if (fi_a.fighter_type==1) fi_a.anger+=200;
-			if (fi_d.fighter_type==2) fi_d.anger+=150;
+			if (fi_a.fighter_type==1) fi_a.anger+=Constants.SKILL_ANGER_INCREASE;
+			if (fi_d.fighter_type==2) fi_d.anger+=Constants.DEFENCE_ANGER_INCREASE;
 			
 			
 			if (fi_d.hp<=0){
@@ -526,12 +533,12 @@ public class ServerHandleOne implements Runnable {
 				fi_d.anger=0;
 				info1+="\t"+fi_d.name+"倒下了!\n";
 				
-				fi_a.anger+=200;
+				fi_a.anger+=Constants.KILL_BONUS_ANGER;
 				
 			}
 			
-			if (fi_a.anger>1000) fi_a.anger=1000;
-			if (fi_d.anger>1000) fi_d.anger=1000;
+			if (fi_a.anger>Constants.MAX_ANGER) fi_a.anger=Constants.MAX_ANGER;
+			if (fi_d.anger>Constants.MAX_ANGER) fi_d.anger=Constants.MAX_ANGER;
 			
 			System.out.println(info1);
 			
@@ -604,14 +611,19 @@ public class ServerHandleOne implements Runnable {
 			hit_rt=fi_a.true_hit;
 			block_rt=fi_d.true_block;
 			
-			dmg=fi_a.true_attack*2-fi_d.true_defence;
+			dmg=(int) (fi_a.true_attack*Constants.NORMAL_ATTACK_MODIFY-fi_d.true_defence*Constants.NORMAL_DEFENCE_MODIFY);
 			
 			condition="";
 			
 			first_block=(int) (Math.random()*100);
 			if (first_block<=block_rt){
 				condition+="\t格挡!";
-				int how_much=(int) (Math.random()*50)+25;
+				
+				int mul=Constants.NORMAL_BLOCK_MAX-Constants.NORMAL_BLOCK_MIN;
+				
+				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
+				
+				
 				condition+="格挡住"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1- how_much/100.0));
 			}
@@ -620,7 +632,12 @@ public class ServerHandleOne implements Runnable {
 				int second_hit=(int) (Math.random()*100);
 				if (second_hit<=hit_rt){
 					condition+="\t暴击!";
-					int how_much=(int) (Math.random()*50)+25;
+					
+					int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
+					
+					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
+					
+					
 					condition+="暴击造成额外"+how_much+"%的伤害\n";
 					dmg=(int) (dmg*(1+ how_much/100.0));
 				}
@@ -633,22 +650,26 @@ public class ServerHandleOne implements Runnable {
 			
 			fi_d.hp-=dmg;
 			
+
+			
 			fi_a.anger+=fi_a.true_atk_anger;
 			fi_d.anger+=fi_d.true_atkd_anger;
 			
-			if (fi_a.fighter_type==1) fi_a.anger+=200;
-			if (fi_d.fighter_type==2) fi_d.anger+=150;
+			if (fi_a.fighter_type==1) fi_a.anger+=Constants.SKILL_ANGER_INCREASE;
+			if (fi_d.fighter_type==2) fi_d.anger+=Constants.DEFENCE_ANGER_INCREASE;
+			
+			
 			
 			if (fi_d.hp<=0){
 				fi_d.anger=0;
 				fi_d.isDead=true;
 				info1+="\t"+fi_d.name+"倒下了!\n";
 				
-				fi_a.anger+=200;
+				fi_a.anger+=Constants.KILL_BONUS_ANGER;
 			}
 			
-			if (fi_a.anger>1000) fi_a.anger=1000;
-			if (fi_d.anger>1000) fi_d.anger=1000;
+			if (fi_a.anger>Constants.MAX_ANGER) fi_a.anger=Constants.MAX_ANGER;
+			if (fi_d.anger>Constants.MAX_ANGER) fi_d.anger=Constants.MAX_ANGER;
 			
 			
 			System.out.println(info1);
@@ -727,7 +748,7 @@ public class ServerHandleOne implements Runnable {
 		
 		String des1="【"+attacker+"】的["+name+"]发动了必杀技------"+skill_name+"\n";
 		
-		int  dmg=(int) (wo.true_attack*rate*1.5-ta.true_defence*2);
+		int  dmg=(int) (wo.true_attack*rate*Constants.POWER_ATTACK_MODIFY-ta.true_defence*Constants.POWER_DEFENCE_MODIFY);
 		
 		
 		int hit_rt=wo.true_hit;
@@ -740,7 +761,12 @@ public class ServerHandleOne implements Runnable {
 		int first_block=(int) (Math.random()*100);
 		if (first_block<=block_rt){
 			condition+="\t大招被格挡!";
-			int how_much=(int) (Math.random()*50)+25;
+			
+			int mul=Constants.POWER_BLOCK_MAX-Constants.POWER_BLOCK_MIN;
+			
+			int how_much=(int) (Math.random()*mul)+Constants.POWER_BLOCK_MIN;
+			
+			
 			condition+="格挡住"+how_much+"%的伤害\n";
 			dmg=(int) (dmg*(1- how_much/100.0));
 		}
@@ -749,7 +775,12 @@ public class ServerHandleOne implements Runnable {
 			int second_hit=(int) (Math.random()*100);
 			if (second_hit<=hit_rt){
 				condition+="\t大招暴击!";
-				int how_much=(int) (Math.random()*50)+25;
+				
+				int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;
+				
+				int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
+				
+				
 				condition+="暴击造成额外"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1+ how_much/100.0));
 			}
@@ -774,10 +805,10 @@ public class ServerHandleOne implements Runnable {
 			ta.anger=0;
 			kill+="\t"+ta.name+"倒下了\n";
 			ta.anger=0;
-			wo.anger+=200;
+			wo.anger+=Constants.KILL_BONUS_ANGER;
 		}
 		
-		if (wo.anger>1000) wo.anger=1000;
+		if (wo.anger>Constants.MAX_ANGER) wo.anger=Constants.MAX_ANGER;
 		return des1+condition+kill;
 		
 	}
@@ -865,7 +896,11 @@ public class ServerHandleOne implements Runnable {
 						int hit=wo.true_hit;
 						int restore_baoji=(int) (Math.random()*100);
 						if (restore_baoji<=hit){
-							int how_much=(int) (Math.random()*50)+25;
+							
+							int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;
+							
+							int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
+							
 							restore=(int) (restore*(1+how_much/100.0));
 						}
 						
@@ -1050,7 +1085,10 @@ public class ServerHandleOne implements Runnable {
 						int hit=wo.true_hit;
 						int restore_baoji=(int) (Math.random()*100);
 						if (restore_baoji<=hit){
-							int how_much=(int) (Math.random()*50)+25;
+							int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;
+							
+							int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
+							
 							restore=(int) (restore*(1+how_much/100.0));
 						}
 						

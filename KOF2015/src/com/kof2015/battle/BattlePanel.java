@@ -44,6 +44,13 @@ public class BattlePanel extends JPanel {
 
 	ClientOneGame tcog;
 	
+	int what_i;
+	
+	public void setWhatI(int what){
+		this.what_i=what;
+	}
+	
+	
 	public void disableAll(){
 		troopLeft.disableAll();
 		troopRight.disableAll();
@@ -278,7 +285,7 @@ public class BattlePanel extends JPanel {
 		infoArea.append(a);
 	}
 	
-	public void update(FighterInstance []self,FighterInstance[] opp,boolean some_damage){
+	public void update(FighterInstance []self,FighterInstance[] opp,boolean some_damage,int atk_index,int who_atk){
 		if (!some_damage){
 			troopLeft.update(self, true);
 			troopRight.update(opp, false);
@@ -286,6 +293,14 @@ public class BattlePanel extends JPanel {
 		}
 		else{
 			//hehe
+			if (who_atk==what_i){
+				my_p[atk_index].faceButton.setBorder(BorderFactory.createEtchedBorder(Color.RED, Color.RED));
+			}
+			else{
+				opp_p[atk_index].faceButton.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
+			}
+			
+			
 			Thread []t=new Thread[12];
 			for (int i=0;i<6;i++){
 				RefreshHPAnimation rha_self=new RefreshHPAnimation(my_p[i], self[i]);
@@ -300,6 +315,13 @@ public class BattlePanel extends JPanel {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+			
+			if (who_atk==what_i){
+				my_p[atk_index].faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
+			}
+			else{
+				opp_p[atk_index].faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
+			}
 			
 			//over
 		}

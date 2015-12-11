@@ -217,10 +217,10 @@ public class ClientOneGame implements Runnable{
 							battle_show=msg.s_info1;
 							getP1P2fromMessage(msg.fi_b);
 							if (whos_turn==what_i){
-								MyTurnProcessWithPower();
+								MyTurnProcessWithPower(msg);
 							}
 							else{
-								OtherTurnProcessWithPower();
+								OtherTurnProcessWithPower(msg);
 							}
 							break;
 						case 1:
@@ -309,26 +309,30 @@ public class ClientOneGame implements Runnable{
 	}
 
 	public void OtherTurnProcessWithNormalAttack(Message foruse) {
+		
+		int who_atk_index=foruse.i_info3;
+		int who_atk=foruse.i_info2;
+		
+		
 		System.out.println("INOTHERTURN: ready to add log:"+battle_show);
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f,true);
+			bp_total.update(p1_f, p2_f,true,who_atk_index,who_atk);
 		else
-			bp_total.update(p2_f, p1_f,true);
+			bp_total.update(p2_f, p1_f,true,who_atk_index,who_atk);
 		bp_total.repaint();
 		
 	}
 
 	public void MyTurnProcessWithNormalAttack(Message foruse) {
-		System.out.println("INMYTURN: ready to add log:"+battle_show);
+		
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
-		//需要禁掉自己人的所有行为,刷新完成后再恢复
-		// troopLeft.disableForSafe
-		// troopRight.enableForSafe
+		
+		
 		BattlerPanel []all_my_bp=bp_total.my_p;
 		boolean []res=new boolean[6];
 		for (int i=0;i<6;i++){
@@ -338,13 +342,14 @@ public class ClientOneGame implements Runnable{
 		}
 		
 		
-		
+		int who_atk_index=foruse.i_info3;
+		int who_atk=foruse.i_info2;
 		
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f,true);
+			bp_total.update(p1_f, p2_f,true,who_atk_index,who_atk);
 		else
-			bp_total.update(p2_f, p1_f,true);
+			bp_total.update(p2_f, p1_f,true,who_atk_index,who_atk);
 		
 		System.out.println(foruse.i_info3+"的行动结束了");
 		
@@ -363,24 +368,30 @@ public class ClientOneGame implements Runnable{
 		
 	}
 
-	public void OtherTurnProcessWithPower() {
+	public void OtherTurnProcessWithPower(Message foruse) {
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
+		int who_atk_index=foruse.i_info3;
+		int who_atk=foruse.i_info2;
+		
+		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f,true);
+			bp_total.update(p1_f, p2_f,true,who_atk_index,who_atk);
 		else
-			bp_total.update(p2_f, p1_f,true);
+			bp_total.update(p2_f, p1_f,true,who_atk_index,who_atk);
 		
 		bp_total.repaint();
 		
 	}
 
-	public void MyTurnProcessWithPower() {
+	public void MyTurnProcessWithPower(Message foruse) {
+		
 		extra_info.append(battle_show);
 		bp_total.addLog(battle_show);
 		
-		
+		int who_atk_index=foruse.i_info3;
+		int who_atk=foruse.i_info2;
 
 		BattlerPanel []all_my_bp=bp_total.my_p;
 		boolean []res_atk=new boolean[6];
@@ -400,9 +411,9 @@ public class ClientOneGame implements Runnable{
 		
 		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f,true);
+			bp_total.update(p1_f, p2_f,true,who_atk_index,who_atk);
 		else
-			bp_total.update(p2_f, p1_f,true);
+			bp_total.update(p2_f, p1_f,true,who_atk_index,who_atk);
 		
 		
 		for (int i=0;i<6;i++){
@@ -427,10 +438,12 @@ public class ClientOneGame implements Runnable{
 		bp_total.disableAll();
 		bp_total.addLog(battle_show);
 		
+		
+		
 		if (what_i==1)
-			bp_total.update(p1_f, p2_f,false);
+			bp_total.update(p1_f, p2_f,false,-1,-1);
 		else
-			bp_total.update(p2_f, p1_f,false);
+			bp_total.update(p2_f, p1_f,false,-1,-1);
 		bp_total.repaint();
 		
 	}
@@ -648,6 +661,10 @@ public class ClientOneGame implements Runnable{
 			bp_total=new BattlePanel(this,p1_f,p2_f);
 		else
 			bp_total=new BattlePanel(this,p2_f,p1_f);
+		
+		bp_total.setWhatI(what_i);
+		
+		
 		frame_battle.add(bp_total);
 		frame_battle.pack();
 		frame_battle.setResizable(false);

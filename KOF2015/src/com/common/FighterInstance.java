@@ -2,6 +2,8 @@ package com.common;
 
 import java.io.Serializable;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 public class FighterInstance implements Serializable{
 	
 	
@@ -120,7 +122,7 @@ public class FighterInstance implements Serializable{
 		
 		
 		if (this.fighter_type==0)
-			anger=300;
+			anger=Constants.BASE_ANGER_ATTACK;
 		else
 			anger=0;
 		
@@ -143,7 +145,7 @@ public class FighterInstance implements Serializable{
 		String tpS="格斗家类型:"+ft_type;
 		
 		String hpS="生命力:"+hp+"/"+max_hp;
-		String angerS="怒气:"+anger+"/"+1000;
+		String angerS="怒气:"+anger+"/"+Constants.MAX_ANGER;
 		String attackS="攻击力:"+true_attack;
 		String defenceS="防御力:"+true_defence;
 		String hitS="暴击率:"+true_hit;

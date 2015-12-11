@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 
+import com.common.Constants;
 import com.common.FighterInstance;
 
 public class BattlerPanel extends JPanel {
@@ -110,6 +111,11 @@ public class BattlerPanel extends JPanel {
 		
 		int new_hp=fi.hp;
 		
+		if (new_hp!=old_hp){
+			Color cc=isme?Color.RED:Color.BLUE;
+			faceButton.setBorder(BorderFactory.createEtchedBorder(cc, cc));
+		}
+		
 		if (new_hp<=0){
 			new_hp=0;
 			int gap=new_hp-old_hp;
@@ -148,8 +154,8 @@ public class BattlerPanel extends JPanel {
 		else{
 			int old_anger=old.anger;
 			int new_anger=fi.anger;
-			if (old_anger>=1000) old_anger=1000;
-			if (new_anger>=1000) new_anger=1000;
+			if (old_anger>=Constants.MAX_ANGER) old_anger=Constants.MAX_ANGER;
+			if (new_anger>=Constants.MAX_ANGER) new_anger=Constants.MAX_ANGER;
 			
 			
 			int gap_hp=new_hp-old_hp;
@@ -179,6 +185,10 @@ public class BattlerPanel extends JPanel {
 				skillButton.setEnabled(false);
 			}
 			
+		}
+		
+		if (new_hp!=old_hp && !isClicked){
+			faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
 		}
 		
 		
@@ -389,7 +399,7 @@ public class BattlerPanel extends JPanel {
 	}
 
 	public void restoreRageEnabled() {
-		if (myfi.anger>=1000)
+		if (myfi.anger>=Constants.MAX_ANGER)
 			enableSkill();
 		
 	}
