@@ -531,7 +531,7 @@ public class ServerHandleOne implements Runnable {
 			if (fi_d.hp<=0){
 				fi_d.isDead=true;
 				fi_d.anger=0;
-				info1+="\t"+fi_d.name+"倒下了!\n";
+				info3+="\t"+fi_d.name+"倒下了!\n";
 				
 				fi_a.anger+=Constants.KILL_BONUS_ANGER;
 				
@@ -663,7 +663,7 @@ public class ServerHandleOne implements Runnable {
 			if (fi_d.hp<=0){
 				fi_d.anger=0;
 				fi_d.isDead=true;
-				info1+="\t"+fi_d.name+"倒下了!\n";
+				info3+="\t"+fi_d.name+"倒下了!\n";
 				
 				fi_a.anger+=Constants.KILL_BONUS_ANGER;
 			}
