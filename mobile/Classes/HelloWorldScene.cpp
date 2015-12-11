@@ -86,6 +86,12 @@ bool HelloWorld::init()
     // add the sprite as a child to this layer
     this->addChild(sprite, 0);
     
+    auto textButton = cocos2d::ui::Button::create();
+    textButton->setTouchEnabled(true);
+    textButton->loadTextures("button.jpg", "button.jpg", "button.jpg");
+    textButton->setTitleText("Log In");
+    textButton->setPosition(Point(visibleSize.width / 2 + origin.x, textButton->getContentSize().height + origin.y));
+    this->addChild(textButton, 0);
     return true;
 }
 
