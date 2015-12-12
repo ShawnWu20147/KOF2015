@@ -1,0 +1,16 @@
+package com.kof2015.client.choose;
+
+import java.io.Serializable;
+
+import com.common.FighterInfo;
+
+public class ChooseFighter implements Serializable{
+	public FighterInfo fi;
+	public boolean selected;
+	public int who_select;
+	public ChooseFighter(FighterInfo fi,boolean selected,int who_select){
+		this.fi=fi;
+		this.selected=selected;
+		this.who_select=who_select;
+	}
+}

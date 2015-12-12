@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.common.FighterInfo;
-import com.common.Message;
+import com.common.message.MessageOrigin;
 
 
 
@@ -55,7 +55,7 @@ public class KOF2015 {
 			OutputStream os=player1.getOutputStream();
 			ObjectOutputStream oos1=new ObjectOutputStream(os);
 			
-			Message p1=(Message)ois1.readObject();
+			MessageOrigin p1=(MessageOrigin)ois1.readObject();
 
 			
 			Socket player2=ss.accept();
@@ -65,18 +65,18 @@ public class KOF2015 {
 			OutputStream os2=player2.getOutputStream();
 			ObjectOutputStream oos2=new ObjectOutputStream(os2);
 			
-			Message p2=(Message)ois2.readObject();
+			MessageOrigin p2=(MessageOrigin)ois2.readObject();
 
 			
 			
-			Message msg1=new Message(0);
+			MessageOrigin msg1=new MessageOrigin(0);
 			msg1.s_info1=p1.msg;
 			msg1.s_info2=p2.msg;
 			msg1.i_info1=1;
 			
 			oos1.writeUnshared(msg1);
 			
-			Message msg2=new Message(0);
+			MessageOrigin msg2=new MessageOrigin(0);
 			msg2.s_info1=p1.msg;
 			msg2.s_info2=p2.msg;
 			msg2.i_info1=2;

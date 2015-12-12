@@ -9,15 +9,15 @@ import java.util.Vector;
 
 import com.common.FighterInfo;
 import com.common.FighterInstance;
-import com.common.Message;
-import com.kof2015.client.ChooseFighter;
+import com.common.message.MessageOrigin;
+import com.kof2015.client.choose.ChooseFighter;
 
 public class ServerHandleOne implements Runnable {
 	ObjectInputStream ois1,ois2;
 	ObjectOutputStream oos1,oos2;
 	String name1,name2;
 	
-	Vector<Message> msg_list;
+	Vector<MessageOrigin> msg_list;
 	
 	Thread t1;
 	Thread t2;
@@ -53,7 +53,7 @@ public class ServerHandleOne implements Runnable {
 		this.oos2=oos2;
 		this.name1=name1;
 		this.name2=name2;
-		msg_list=new Vector<Message>();
+		msg_list=new Vector<MessageOrigin>();
 		
 		all_cand=new HashSet<Integer>();
 		can_fighters=new ArrayList<FighterInfo>();
@@ -73,7 +73,7 @@ public class ServerHandleOne implements Runnable {
 			try {
 				while (true){
 					Thread.currentThread().sleep(20);
-					Message msg=(Message) ois1.readObject();
+					MessageOrigin msg=(MessageOrigin) ois1.readObject();
 					msg.from=1;
 					msg_list.add(msg);
 				}
@@ -93,7 +93,7 @@ public class ServerHandleOne implements Runnable {
 		public void run() {
 			try {
 				while (true){
-					Message msg=(Message) ois2.readObject();
+					MessageOrigin msg=(MessageOrigin) ois2.readObject();
 					msg.from=2;
 					msg_list.add(msg);
 				}
@@ -111,7 +111,7 @@ public class ServerHandleOne implements Runnable {
 		public void run() {
 			while (true){
 				if (msg_list.size()>0){
-					Message toh=msg_list.get(0);
+					MessageOrigin toh=msg_list.get(0);
 					msg_list.remove(0);
 					
 					//following are the handle
@@ -245,7 +245,7 @@ public class ServerHandleOne implements Runnable {
 		
 		
 		
-		Message msg=new Message(-1);
+		MessageOrigin msg=new MessageOrigin(-1);
 		//following are choose pai
 		double d1=Math.random();
 		
@@ -284,7 +284,7 @@ public class ServerHandleOne implements Runnable {
 				cf[i]=new ChooseFighter(can_fighters.get(i),false,-2);
 			}
 			
-			Message msg_both=new Message(2);
+			MessageOrigin msg_both=new MessageOrigin(2);
 			msg_both.i_info1=-1;
 			msg_both.cf=cf;
 			if (d1>=0.5)
@@ -307,7 +307,7 @@ public class ServerHandleOne implements Runnable {
 			
 			if (d1>0.5){	
 				for (int i=0;i<5;i++){
-					Message msg1=new Message(2);
+					MessageOrigin msg1=new MessageOrigin(2);
 					if (i==0 || i==4) msg1.i_info3=1;
 					else msg1.i_info3=2;
 					msg1.i_info1=0;msg1.i_info2=1;
@@ -324,7 +324,7 @@ public class ServerHandleOne implements Runnable {
 					while(!p1_sel_over) Thread.currentThread().sleep(20);
 					p1_sel_over=false;
 					
-					Message msg2=new Message(2);
+					MessageOrigin msg2=new MessageOrigin(2);
 					if (i==0 || i==4) msg2.i_info3=1;
 					else msg2.i_info3=2;
 					msg2.i_info1=0;msg2.i_info2=2;
@@ -342,7 +342,7 @@ public class ServerHandleOne implements Runnable {
 			}
 			else{
 				for (int i=0;i<5;i++){		
-					Message msg2=new Message(2);
+					MessageOrigin msg2=new MessageOrigin(2);
 					if (i==0 || i==4) msg2.i_info3=1;
 					else msg2.i_info3=2;
 					msg2.i_info1=0;msg2.i_info2=2;
@@ -358,7 +358,7 @@ public class ServerHandleOne implements Runnable {
 					while(!p2_sel_over) Thread.currentThread().sleep(20);
 					p2_sel_over=false;
 					
-					Message msg1=new Message(2);
+					MessageOrigin msg1=new MessageOrigin(2);
 					if (i==0 || i==4) msg1.i_info3=1;
 					else msg1.i_info3=2;
 					msg1.i_info1=0;msg1.i_info2=1;
@@ -378,7 +378,7 @@ public class ServerHandleOne implements Runnable {
 			}
 			
 			//通知双方结束选择
-			Message msg_over=new Message(2);
+			MessageOrigin msg_over=new MessageOrigin(2);
 			msg_over.i_info1=1;
 			msg_over.cf=cf;
 			
@@ -420,7 +420,7 @@ public class ServerHandleOne implements Runnable {
 					p2f[index_p2++]=cf[i].fi;
 				}
 			}
-			Message msg_both_send=new Message(3);
+			MessageOrigin msg_both_send=new MessageOrigin(3);
 			msg_both_send.fi=p1f;
 			oos1.writeUnshared(msg_both_send);
 			
@@ -443,7 +443,7 @@ public class ServerHandleOne implements Runnable {
 		
 		
 		
-		Message msg=new Message(4);
+		MessageOrigin msg=new MessageOrigin(4);
 		msg.i_info1=-1;
 		addFIBtoMsg(msg);
 		
@@ -535,7 +535,7 @@ public class ServerHandleOne implements Runnable {
 			
 			System.out.println(info1);
 			
-			Message msg_1=new Message(4);
+			MessageOrigin msg_1=new MessageOrigin(4);
 			
 			msg_1.i_info1=1;	//normal attack
 			msg_1.i_info2=1;	//whose turn
@@ -575,7 +575,7 @@ public class ServerHandleOne implements Runnable {
 			}
 			if (over){
 				// p1 win
-				Message msg_over=new Message(4);
+				MessageOrigin msg_over=new MessageOrigin(4);
 				msg_over.i_info1=2;
 				msg_over.i_info2=1;
 				msg_over.s_info1="恭喜你赢了!";
@@ -655,7 +655,7 @@ public class ServerHandleOne implements Runnable {
 			
 
 			
-			Message msg_2=new Message(4);
+			MessageOrigin msg_2=new MessageOrigin(4);
 			msg_2.i_info1=1;		//normal attack
 			msg_2.i_info2=2;		//whose turn
 			
@@ -694,7 +694,7 @@ public class ServerHandleOne implements Runnable {
 			}
 			if (over){
 				// p2 win
-				Message msg_over=new Message(4);
+				MessageOrigin msg_over=new MessageOrigin(4);
 				msg_over.i_info1=2;
 				msg_over.i_info2=2;
 				msg_over.s_info1="恭喜你赢了!";
@@ -1159,7 +1159,7 @@ public class ServerHandleOne implements Runnable {
 	
 	
 	public void sendPowerResult(String logs,int whosturn,int attk){
-		Message msg=new Message(4);
+		MessageOrigin msg=new MessageOrigin(4);
 		msg.i_info1=0;
 		msg.i_info2=whosturn;
 		msg.i_info3=attk;
@@ -1184,7 +1184,7 @@ public class ServerHandleOne implements Runnable {
 				}
 			}
 			if (over){
-				Message msg_over=new Message(4);
+				MessageOrigin msg_over=new MessageOrigin(4);
 				msg_over.i_info1=2;
 				msg_over.i_info2=2;
 				msg_over.s_info1="恭喜你赢了!";
@@ -1209,7 +1209,7 @@ public class ServerHandleOne implements Runnable {
 				}
 			}
 			if (over){
-				Message msg_over=new Message(4);
+				MessageOrigin msg_over=new MessageOrigin(4);
 				msg_over.i_info1=2;
 				msg_over.i_info2=2;
 				msg_over.s_info1="恭喜你赢了!";
@@ -1229,7 +1229,7 @@ public class ServerHandleOne implements Runnable {
 	}
 	
 
-	public void addFIBtoMsg(Message msg){
+	public void addFIBtoMsg(MessageOrigin msg){
 		msg.fi_b=new FighterInstance[12];
 		for (int i=0;i<6;i++){
 			msg.fi_b[i]=p1_fi[i];
@@ -1242,7 +1242,7 @@ public class ServerHandleOne implements Runnable {
 		//using p1_fi[] and p2_fi[] which are FighterInstance
 		// first send them to clients, with type=4 subtype=-1 means start
 		
-		Message msg=new Message(4);
+		MessageOrigin msg=new MessageOrigin(4);
 		msg.i_info1=-2;
 		msg.s_info1="战斗开始!\n";
 		addFIBtoMsg(msg);
@@ -1256,7 +1256,7 @@ public class ServerHandleOne implements Runnable {
 			msg=null;
 			
 			//然后发送-1 给 第一回合的攻击者以及防御者
-			Message msg_round1=new Message(4);
+			MessageOrigin msg_round1=new MessageOrigin(4);
 			msg_round1.i_info1=-1;
 			msg_round1.i_info2=first_attack;
 			addFIBtoMsg(msg_round1);	
