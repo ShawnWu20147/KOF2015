@@ -6,7 +6,7 @@ public class DataManager {
 	
 	private static DataManager manager = new DataManager();
 	
-	private UserInfo userInfo;
+	private UserInfo userInfo = null;
 	
 	private DataManager()
 	{}

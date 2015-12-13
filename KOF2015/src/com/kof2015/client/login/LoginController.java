@@ -12,7 +12,6 @@ import com.common.Constants;
 import com.common.UserInfo;
 import com.common.message.IMessageListener;
 import com.common.message.Message;
-import com.common.message.MessageOrigin;
 import com.common.message.MessageManager;
 import com.kof2015.client.AController;
 import com.kof2015.client.DataManager;
@@ -29,7 +28,7 @@ public class LoginController extends AController {
 	}
 	
 	public void setCallbacksOnPanel( JPanel panel ) {
-		// TODO 注册界面上的回调函数
+		// 注册界面上的回调函数
 		LoginPanel jpLogin = ( LoginPanel ) ( panel );
 		
 		jpLogin.addConnectionListener(new onConnectionButtonClicked(jpLogin));
@@ -54,8 +53,10 @@ public class LoginController extends AController {
 			//	昵称 是否有什么限制
 			
 			// 开启新线程
+			new Thread(new waitingSocket( strServer, strNickname )).start();
 			
 			// 将按钮设置为不可按状态
+			jpLogin.setConnectButtonState(LoginPanel.CONNECTING_SERVER);
 		}
 		
 		class waitingSocket implements Runnable
@@ -63,47 +64,65 @@ public class LoginController extends AController {
 			private String strServer;
 			private String strNickname;
 			
-			public waitingSocket() {
-				// TODO Auto-generated constructor stub
+			public waitingSocket( String strServer, String strNickname ) {
+				this.strServer = strServer;
+				this.strNickname = strNickname;
 			}
 			
 			@Override
 			public void run() {
+				// 检查是否已经有连接
+				UserInfo oldInfo = DataManager.getManager().getUserInfo(), newInfo = new UserInfo(strNickname);;
+				MessageManager manager = MessageManager.getManager(oldInfo);
+				
 				// 尝试同服务器建立连接（Socket）
-				// TODO 开启新线程，尝试Socket连接
-				
-				Socket socket = null;
-				boolean success = true;
-				try {
-					socket = new Socket(strServer, Constants.PORT_NUMBER);
-				} catch (UnknownHostException e1) {
-					// TODO 提示：检查IP地址的正确性
-					System.err.println("检查IP地址的正确性");
-					success = false;
-				} catch (IOException e1) {
-					// TODO 提示：检查网络是否可用
-					System.err.println("检查网络是否可用");
-					success = false;
-				}
-				
-				// 连接失败
-				if( !success )
+				if( manager == null )
 				{
-					// 用户提示：确认服务器地址之类的
+					Socket socket = null;
+					boolean success = true;
+					String strError = "";
+					try {
+						socket = new Socket(strServer, Constants.PORT_NUMBER);
+					} catch (UnknownHostException e1) {
+						// TODO 提示：检查IP地址的正确性
+						strError = "检查IP地址的正确性";
+						success = false;
+					} catch (IOException e1) {
+						// TODO 提示：检查网络是否可用
+						strError = "检查网络是否可用";
+						success = false;
+					}
+					
+					// 连接失败
+					if( !success )
+					{
+						// 用户提示：确认服务器地址之类的
+						System.err.println( strError );
+						jpLogin.setConnectButtonState(LoginPanel.WAITING_INPUT);
+					}
+					// 连接成功
+					else
+					{
+						// 检查是否有用户名
+						DataManager.getManager().setUserInfo(newInfo);
+						// 在消息管理者（MessageManager）中注册
+						try {
+							manager = MessageManager.createManager(newInfo, socket);
+						} catch (IOException e) {
+							// TODO 管理器创建失败，输入、输出流出现问题
+							System.err.println("创建消息管理器失败...");
+							return;
+						}
+					}
+				} else {
+					DataManager.getManager().setUserInfo(newInfo);
+					MessageManager.rekeyManager(oldInfo, newInfo);
 				}
-				// 连接成功
-				else
-				{
-//					// 检查是否有用户名
-//					UserInfo info = new UserInfo(strNickname);
-//					DataManager.getManager().setUserInfo(info);
-//					// 在消息管理者（MessageManager）中注册
-//					MessageManager manager = MessageManager.createManager(info, socket);
-					// TODO 发送登录请求
-					//manager.send();
-					// TODO 注册监听器：登陆操作是否成功
-					//manager.addHandler();
-				}
+				
+				// 注册监听器：登陆操作是否成功
+				manager.addHandler( new loginMessageListener() );
+				// 发送登录请求
+				manager.send(Message.generateLoginMessage( newInfo.getIdentifier() ));
 			}
 		}
 		
@@ -111,18 +130,31 @@ public class LoginController extends AController {
 		{
 			@Override
 			public void onReceviedMessage( Message msg ) {
-				// TODO 更新按钮为可按状态
 				
-				// TODO 登录成功
-				// 调用结束方法（complete）
-				complete();
-				
+				switch( msg.iType ) {
 				// TODO 登录失败
 				// 处理1：将提示信息反馈给用户
 				//	情况1：用户名不存在
 				//	情况2：重复的昵称
-				// 处理2：断开当前连接
-				MessageManager.closeManager(DataManager.getManager().getUserInfo());
+				//	情况3：服务器正在维护？
+				case Message.TYPE_LOGIN_EXIST:
+					System.out.println( "重复的昵称" );
+					break;
+				case Message.TYPE_LOGIN_NONUSER:
+					System.out.println( "用户名不存在" );
+					break;
+				// 登录成功
+				// 调用结束方法（complete）
+				case Message.TYPE_LOGIN_SUCCESS:
+					complete();
+					break;
+				}
+				
+				// 更新按钮为可按状态
+				if( msg.iType == Message.TYPE_LOGIN_EXIST || msg.iType == Message.TYPE_LOGIN_NONUSER || msg.iType == Message.TYPE_LOGIN_SUCCESS ) {
+					MessageManager.getManager(DataManager.getManager().getUserInfo()).removeHandler( this );
+					jpLogin.setConnectButtonState(LoginPanel.WAITING_INPUT);
+				}
 			}
 			
 		}

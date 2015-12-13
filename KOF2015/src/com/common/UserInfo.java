@@ -1,12 +1,17 @@
 package com.common;
 
+/**
+ * 记录了用户的唯一标识（目前为昵称）。
+ * TODO 准备用来记录登陆密码等信息。
+ * @author cellzero
+ */
 public class UserInfo {
 
 	public static String generateNickname()
 	{
 		final String[] prefix = {
 				"昂戳的", "不懂规矩的", "突破天际的", "倒霉的", "暗爽的", "强拆的", "穿越的",
-				"至高的", "忠厚的", "开朗的", "大方的", "成熟的", "善良的", "开放的", "好吃的",
+				"至高的", "忠厚的", "开朗的", "大方的", "成熟的", "善良的", "开放的", "贪吃的",
 				"婆婆妈妈的", "抑郁的", "贪小便宜的", "害羞的", "热心的", "阴险的", "幼稚的"
 		};
 		final String[] postfix = {
@@ -34,7 +39,7 @@ public class UserInfo {
 	public String nickname;
 	
 	public UserInfo() {
-		nickname = UserInfo.generateNickname();
+		this( UserInfo.generateNickname() );
 	}
 	
 	public UserInfo(String nickname) {
@@ -43,5 +48,16 @@ public class UserInfo {
 	
 	public String getIdentifier() {
 		return nickname;
+	}
+	
+	@Override
+	public boolean equals( Object obj ) {
+		if( !( obj instanceof UserInfo ) )
+			return false;
+		
+		UserInfo info = (UserInfo)( obj );
+		if( !( getIdentifier().equals( info.getIdentifier() )) )
+			return false;
+		return true;
 	}
 }

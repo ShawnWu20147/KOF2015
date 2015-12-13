@@ -49,7 +49,8 @@ public class LoginPanel extends JPanel {
 			}
 			loginPanel.add(jt,BorderLayout.CENTER);
 			
-			jbConnection=new JButton("登陆并寻找一场比赛");
+			jbConnection = new JButton();
+			setConnectButtonState(WAITING_INPUT);
 			loginPanel.add(jbConnection,BorderLayout.SOUTH);
 		}
 		add(loginPanel, BorderLayout.SOUTH);
@@ -58,6 +59,22 @@ public class LoginPanel extends JPanel {
 	public void addConnectionListener( ActionListener listener )
 	{
 		jbConnection.addActionListener(listener);
+	}
+	
+	public static final int WAITING_INPUT = 0;
+	public static final int CONNECTING_SERVER = 1;
+	public void setConnectButtonState( int state )
+	{
+		if( state == WAITING_INPUT )
+		{
+			jbConnection.setText( "登录并寻找一场比赛" );
+			jbConnection.setEnabled(true);
+		}
+		else if( state == CONNECTING_SERVER )
+		{
+			jbConnection.setText( "正在连接服务器，请稍等..." );
+			jbConnection.setEnabled(false);
+		}
 	}
 	
 	public String getServerString()

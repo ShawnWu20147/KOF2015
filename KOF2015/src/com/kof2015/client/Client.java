@@ -1,6 +1,5 @@
 package com.kof2015.client;
 
-import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -45,7 +44,6 @@ public class Client {
 	 */
 	public void exitEmergency()
 	{
-		System.out.println("exit~");
 		System.exit( 0 );
 	}
 	
@@ -75,6 +73,7 @@ public class Client {
 			public void onComplete() {
 				// TODO 切换到下一场景
 				System.out.println(" 登录成功 ");
+				openMatchStage();
 			}
 		});
 	}
