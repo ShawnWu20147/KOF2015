@@ -11,7 +11,7 @@ import com.common.UserState;
 public class UserManager {
 	/**
 	 * 维护了当前在线的所有用户。
-	 * TODO 对吗？为了确保多线程安全，所有UserState操作都应该由该类完成。
+	 * XXX 对吗？为了确保多线程安全，所有UserState操作都应该由该类完成。
 	 */
 	private static volatile HashMap<UserInfo, UserState> mapGlobalUsers = new HashMap<UserInfo, UserState>();
 	

@@ -2,10 +2,15 @@ package com.kof2015.client;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.common.message.Message;
 import com.kof2015.client.login.LoginController;
 import com.kof2015.client.login.LoginPanel;
 
@@ -18,7 +23,17 @@ public class Client {
 	
 	public static void main(String[] args) {
 		System.out.println("Hello World!");
-		new Client();
+//		new Client();
+		
+		Message msg = Message.generateLoginMessage("cellzero");
+		try {
+		 ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(new File("E:/Person.txt")));
+				          oo.writeObject(msg);
+				          System.out.println("Person对象序列化成功！");
+				          oo.close();
+		} catch (IOException e ){
+			
+		}
 	}
 	
 	public Client() {

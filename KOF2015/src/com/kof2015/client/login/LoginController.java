@@ -13,6 +13,7 @@ import com.common.UserInfo;
 import com.common.message.IMessageListener;
 import com.common.message.Message;
 import com.common.message.MessageManager;
+import com.common.message.MessageManagerClosedException;
 import com.kof2015.client.AController;
 import com.kof2015.client.DataManager;
 
@@ -84,11 +85,11 @@ public class LoginController extends AController {
 					try {
 						socket = new Socket(strServer, Constants.PORT_NUMBER);
 					} catch (UnknownHostException e1) {
-						// TODO 提示：检查IP地址的正确性
+						// TODO 在界面提示：检查IP地址的正确性
 						strError = "检查IP地址的正确性";
 						success = false;
 					} catch (IOException e1) {
-						// TODO 提示：检查网络是否可用
+						// TODO 在界面提示：检查网络是否可用
 						strError = "检查网络是否可用";
 						success = false;
 					}
@@ -119,10 +120,15 @@ public class LoginController extends AController {
 					MessageManager.rekeyManager(oldInfo, newInfo);
 				}
 				
-				// 注册监听器：登陆操作是否成功
-				manager.addHandler( new loginMessageListener() );
-				// 发送登录请求
-				manager.send(Message.generateLoginMessage( newInfo.getIdentifier() ));
+				try {
+					// 注册监听器：登陆操作是否成功
+					manager.addHandler( new loginMessageListener() );
+					// 发送登录请求
+					manager.send(Message.generateLoginMessage( newInfo.getIdentifier() ));
+				} catch (MessageManagerClosedException e) {
+					// XXX 给出提示信息
+					jpLogin.setConnectButtonState(LoginPanel.WAITING_INPUT);
+				}
 			}
 		}
 		
@@ -152,7 +158,11 @@ public class LoginController extends AController {
 				
 				// 更新按钮为可按状态
 				if( msg.iType == Message.TYPE_LOGIN_EXIST || msg.iType == Message.TYPE_LOGIN_NONUSER || msg.iType == Message.TYPE_LOGIN_SUCCESS ) {
-					MessageManager.getManager(DataManager.getManager().getUserInfo()).removeHandler( this );
+					try {
+						MessageManager.getManager(DataManager.getManager().getUserInfo()).removeHandler( this );
+					} catch (MessageManagerClosedException e) {
+						// XXX 好像什么都不用做
+					}
 					jpLogin.setConnectButtonState(LoginPanel.WAITING_INPUT);
 				}
 			}

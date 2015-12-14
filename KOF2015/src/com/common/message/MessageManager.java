@@ -70,7 +70,7 @@ public class MessageManager {
 		MessageManager manager = getManager(userInfo);
 		
 		if( manager != null )
-			manager.close();
+			manager.closeAll();
 	}
 	
 	/**
@@ -118,109 +118,75 @@ public class MessageManager {
 		sender = new MessageSender(socket.getOutputStream());
 		receiver = new MessageReceiver(socket.getInputStream());
 		handler = receiver.getMessageHandler();
-		
-		new Thread(sender).start();
-		new Thread(receiver).start();
 	}
 	
-	public void close()
+	public void closeAll()
 	{
 		bExit = true;
 		
 		sender.close();
-		receiver.recvclose();
+		receiver.close();
 		handler.close();
 		
 		try {
-			connection.getOutputStream().flush();
-			connection.getOutputStream().close();
-			
-			connection.getInputStream().close();
 			connection.close();
 		} catch (IOException e) {
-			// TODO 关闭Socket异常
+			// XXX 关闭Socket异常，好像什么都不用做啊，反正不要用了= =
 		}
 	}
 	
-	public void send( Message msg )
+	public boolean isClosed() {
+		return bExit;
+	}
+	
+	public void send( Message msg ) throws MessageManagerClosedException
 	{
+		if( isClosed() )
+			throw new MessageManagerClosedException();
 		sender.send(msg);
 	}
 	
-	public void addHandler( IMessageListener listener )
+	public void addHandler( IMessageListener listener ) throws MessageManagerClosedException
 	{
+		if( isClosed() )
+			throw new MessageManagerClosedException();
 		handler.addMessageListener(listener);
 	}
 	
-	public void removeHandler( IMessageListener listener )
+	public void removeHandler( IMessageListener listener ) throws MessageManagerClosedException
 	{
+		if( isClosed() )
+			throw new MessageManagerClosedException();
 		handler.removeMessageListener(listener);
 	}
 	
-	class MessageSender implements Runnable {
-		
-		private volatile LinkedList<Message> buffer;
+	class MessageSender {
 		private ObjectOutputStream out;
 		
 		public MessageSender(OutputStream out ) throws IOException {
-			buffer = new LinkedList<Message>();
 			this.out = new ObjectOutputStream(out);
 		}
 		
 		public void send(Message msg)
 		{
-			synchronized( buffer ) {
-				buffer.add(msg);
-				buffer.notify();
-			}
-		}
-		
-		public void flush()
-		{
-			synchronized( buffer ) {
-				while( !buffer.isEmpty() ) {
-					Message msg = buffer.removeFirst();
-					
-					try {
-						out.writeObject(msg);
-						out.flush();
-					} catch (IOException e) {
-						// TODO 发送失败
-						System.err.println(getClass().getName() + "发送失败，接收者：" + connection.getRemoteSocketAddress());
-					}
-				}
+			try {
+				out.writeObject(msg);
+				out.flush();
+			} catch (IOException e) {
+				// XXX 发送异常
+				System.err.println(getClass().getName() + "发送失败，连接者：" + connection.getRemoteSocketAddress());
+				closeAll();
 			}
 		}
 		
 		public void close()
 		{
-			flush();
-			
 			try {
+				out.flush();
 				out.close();
 			} catch (IOException e) {
-				// TODO 关闭失败
+				// XXX 关闭失败
 				System.err.println(getClass().getName() + "关闭失败，连接者：" + connection.getRemoteSocketAddress());
-			}
-			synchronized( buffer ) {
-				buffer.notify();
-			}
-		}
-		
-		@Override
-		public void run() {
-			
-			while( !bExit ) {
-				flush();
-				
-				try {
-					synchronized( buffer ) {
-						buffer.wait();
-					}
-				} catch (InterruptedException e) {
-					// TODO 不可能被打断吧
-					assert false: getClass().getName() + "的缓冲队列，在等待时被打断";
-				}
 			}
 		}
 	}
@@ -242,12 +208,12 @@ public class MessageManager {
 			return handler;
 		}
 		
-		public void recvclose()
+		public void close()
 		{
 			try {
 				in.close();
 			} catch (IOException e) {
-				// TODO 关闭失败
+				// XXX 关闭失败
 				System.err.println(getClass().getName() + "关闭失败，连接者：" + connection.getRemoteSocketAddress());
 			}
 		}
@@ -261,9 +227,9 @@ public class MessageManager {
 					handler.addMessageToBuffer(msg);
 				} catch (ClassNotFoundException | IOException e) {
 					if( !bExit ) {
-						// TODO 异常退出，将消息传递给上层
+						// XXX 异常退出，将消息传递给上层
 						System.err.println(getClass().getName() + "异常退出");
-						close();
+						closeAll();
 					}
 				}
 			}
@@ -348,7 +314,9 @@ public class MessageManager {
 		{
 			flush();
 			
-			listenerList.removeAll(new LinkedList<IMessageListener>());
+			synchronized ( listenerList ) {
+				listenerList.removeAll(new LinkedList<IMessageListener>());
+			}
 			synchronized( messageBuffer ) {
 				messageBuffer.notify();
 			}
@@ -365,7 +333,7 @@ public class MessageManager {
 						messageBuffer.wait();
 					}
 				} catch (InterruptedException e) {
-					// TODO 不可能被打断吧
+					// XXX 不可能被打断吧
 					assert false: getClass().getName() + "的缓冲队列，在等待时被打断";
 				}
 			}
