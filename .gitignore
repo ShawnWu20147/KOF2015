@@ -1,0 +1,4 @@
+/KOF2015/bin/com/kof2015/client/*.class
+/KOF2015/bin/com/kof2015/server/*.class
+/KOF2015/bin/com/kof2015/ui/*.class
+*.class
