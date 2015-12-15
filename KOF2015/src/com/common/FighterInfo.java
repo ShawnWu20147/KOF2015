@@ -22,9 +22,15 @@ public class FighterInfo implements Serializable{
 	public int skill_type;
 	public double skill_ratio;
 	
+	public String skill_state_description;
+	public int skill_state_type;
+	public int skill_state_ratio;
+	
+	
 	public FighterInfo(int id,String name,int ability,int fighter_type,int base_hp,int base_attack,int base_defence
 			,int base_hit,int base_block,int base_attack_anger,int base_attacked_anger,int base_power_anger,int base_powered_anger
-			, String description,String skill_name,String skill_description,int skill_type,double skill_ratio){
+			, String description,String skill_name,String skill_description
+			,int skill_type,double skill_ratio,String skill_state_description,int skill_state_type,int skill_state_ratio){
 			this.id=id;
 			this.name=name;
 			this.ability=ability;
@@ -43,6 +49,10 @@ public class FighterInfo implements Serializable{
 			this.skill_descrption=skill_description;
 			this.skill_type=skill_type;
 			this.skill_ratio=skill_ratio;
+			
+			this.skill_state_description=skill_state_description;
+			this.skill_state_type=skill_state_type;
+			this.skill_state_ratio=skill_state_ratio;
 	}
 
 	private String getType(int i){
@@ -73,9 +83,12 @@ public class FighterInfo implements Serializable{
 		String p="大招类型:"+getPowerType(skill_type);
 		String q="大招倍率:"+skill_ratio;
 		
+		String r="大招额外效果:"+skill_state_description;
+		
+		
 		
 		String all="<html>"+"<p>" +a+"</p>"+"<p>"+b+"</p>"+"<p>"+c+"</p>"+"<p>"+d+"</p>"+"<p>"+e+"</p>"+"<p>"+f+"</p>"+"<p>"+g+"</p>"+"<p>"+h+"</p>"+"<p>"+i+"</p>"+"<p>"+j+"</p>"+"<p>"+k+"</p>"+"<p>"
-				+l+"</p>"+"<p>"+m+"</p>"+"<p>"+n+"</p>"+"<p>"+o+"</p>"+"<p>"+p+"</p>"+"<p>"+q+"</p>"+"</html>";
+				+l+"</p>"+"<p>"+m+"</p>"+"<p>"+n+"</p>"+"<p>"+o+"</p>"+"<p>"+p+"</p>"+"<p>"+q+"</p>"+"<p>"+r+"</p>"+"</html>";
 		return all;
 		
 		
@@ -101,8 +114,10 @@ public class FighterInfo implements Serializable{
 		String p="大招类型:"+getPowerType(skill_type);
 		String q="大招倍率:"+skill_ratio;
 		
+		String r="大招额外效果:"+skill_state_description;
+		
 		String all=a+"\n"+b+"\n"+c+"\n"+d+"\n"+e+"\n"+f+"\n"+g+"\n"+h+"\n"+i+"\n"+j+"\n"+k+"\n"
-				+l+"\n"+m+"\n"+n+"\n"+o+"\n"+p+"\n"+q+"\n";
+				+l+"\n"+m+"\n"+n+"\n"+o+"\n"+p+"\n"+q+"\n"+r+"\n";
 		return all;
 	}
 

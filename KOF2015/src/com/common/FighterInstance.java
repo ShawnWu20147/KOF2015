@@ -1,6 +1,7 @@
 package com.common;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
@@ -34,6 +35,8 @@ public class FighterInstance implements Serializable{
 	public String skill_type;
 	
 	public int skill_type_i;
+	
+	public ArrayList<SkillState> all_ss;
 	
 	
 	
@@ -70,8 +73,8 @@ public class FighterInstance implements Serializable{
 		
 		
 		
-		max_hp=(int) (base.base_hp*(1+ratio));
-		hp=(int) (base.base_hp*(1+ratio));
+		max_hp=(int) (base.base_hp*(2+ratio));
+		hp=(int) (base.base_hp*(2+ratio));
 		
 		
 		
@@ -126,8 +129,11 @@ public class FighterInstance implements Serializable{
 		else
 			anger=0;
 		
+		anger=900;
 		
 		isDead=false;
+		
+		all_ss=new ArrayList<SkillState>();
 	}
 	
 	/**
@@ -146,19 +152,95 @@ public class FighterInstance implements Serializable{
 		
 		String hpS="生命力:"+hp+"/"+max_hp;
 		String angerS="怒气:"+anger+"/"+Constants.MAX_ANGER;
-		String attackS="攻击力:"+true_attack;
-		String defenceS="防御力:"+true_defence;
-		String hitS="暴击率:"+true_hit;
-		String blockS="格挡率:"+true_block;
+		String attackS="攻击力:"+getActualAttack();
+		String defenceS="防御力:"+getActualDefence();
+		String hitS="暴击率:"+getActualHit();
+		String blockS="格挡率:"+getActualBlock();
 		
 		String powerS="必杀技:["+skill_name+"]:"+skill_description;
 		String powerTypeS="必杀技类型:"+skill_type;
 		
+		String powerS_EX="必杀技额外效果:"+original_base.skill_state_description;
+		
 		
 		String overall=nameS+"\n"+idS+"\n"+qualityS+"\n"+tpS+"\n"+hpS+"\n"+angerS+"\n"+attackS+"\n"+defenceS+"\n"
-		+hitS+"\n"+blockS+"\n"+powerS+"\n"+powerTypeS+"\n";
+		+hitS+"\n"+blockS+"\n"+powerS+"\n"+powerTypeS+"\n"+powerS_EX+"\n";
 		return overall;
 		
 		
 	}
+	
+	public String getStateInfo(){
+		String rs="";
+		for (SkillState ss:all_ss){
+			rs+=ss.toString()+"\n";
+		}
+		return rs;
+	}
+	
+	public int getActualAttack(){
+		int base=true_attack;
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.ATTACK_BUFF_TYPE_INC.contains(tp)){
+				base+=ss.ratio;
+			}
+			if (Constants.ATTACK_BUFF_TYPE_DEC.contains(tp)){
+				base-=ss.ratio;
+			}
+		}
+		return base;
+	}
+	
+	public int getActualDefence(){
+		int base=true_defence;
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.DEFENCE_BUFF_TYPE_INC.contains(tp)){
+				base+=ss.ratio;
+			}
+			if (Constants.DEFENCE_BUFF_TYPE_DEC.contains(tp)){
+				base-=ss.ratio;
+			}
+		}
+		return base;
+	}
+	
+	public int getActualHit(){
+		int base=true_hit;
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.HIT_BUFF_TYPE_INC.contains(tp)){
+				base+=ss.ratio;
+			}
+			if (Constants.HIT_BUFF_TYPE_DEC.contains(tp)){
+				base-=ss.ratio;
+			}
+		}
+		return base;
+	}
+	
+	public int getActualBlock(){
+		int base=true_block;
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.BLOCK_BUFF_TYPE_INC.contains(tp)){
+				base+=ss.ratio;
+			}
+			if (Constants.BLOCK_BUFF_TYPE_DEC.contains(tp)){
+				base-=ss.ratio;
+			}
+		}
+		
+		return base;
+	}
+	
+	
+	public void addState(SkillState ss){
+		all_ss.add(ss);
+	}
+	
+	
+	
+	
 }

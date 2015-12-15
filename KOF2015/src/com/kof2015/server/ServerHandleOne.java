@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 
@@ -11,6 +12,7 @@ import com.common.Constants;
 import com.common.FighterInfo;
 import com.common.FighterInstance;
 import com.common.Message;
+import com.common.SkillState;
 import com.kof2015.client.ChooseFighter;
 
 public class ServerHandleOne implements Runnable {
@@ -438,11 +440,28 @@ public class ServerHandleOne implements Runnable {
 
 	}
 
-
-
 	public void ChangePlayer(int from_who) {
-		
-		
+		for (FighterInstance fi:p1_fi){
+			ArrayList<SkillState> need_del=new ArrayList<SkillState>();
+			for (SkillState ss:fi.all_ss){
+				ss.decreaseRound();
+				if (ss.getRoundsLeft()<=0) need_del.add(ss);
+			}
+			for (SkillState ss:need_del){
+				fi.all_ss.remove(ss);
+			}
+
+		}
+		for (FighterInstance fi:p2_fi){
+			ArrayList<SkillState> need_del=new ArrayList<SkillState>();
+			for (SkillState ss:fi.all_ss){
+				ss.decreaseRound();
+				if (ss.getRoundsLeft()<=0) need_del.add(ss);
+			}
+			for (SkillState ss:need_del){
+				fi.all_ss.remove(ss);
+			}
+		}
 		
 		Message msg=new Message(4);
 		msg.i_info1=-1;
@@ -450,24 +469,28 @@ public class ServerHandleOne implements Runnable {
 		
 		for (int i=0;i<12;i++){
 			System.out.println(msg.fi_b[i].name);
-		}
-		
+			
+		}	
 		try{
 			switch(from_who){
 			case 1:
 				msg.i_info2=2;	//轮到p2行动
 				msg.s_info1="你【"+name2+"】的回合开始\n";
+				oos2.reset();
 				oos2.writeUnshared(msg);
 				
 				msg.s_info1="对手【"+name2+"】的回合开始\n";
+				oos1.reset();
 				oos1.writeUnshared(msg);
 				break;
 			case 2:
 				msg.i_info2=1;
 				msg.s_info1="你【"+name1+"】的回合开始\n";
+				oos1.reset();
 				oos1.writeUnshared(msg);
 				
 				msg.s_info1="对手【"+name1+"】的回合开始\n";
+				oos2.reset();
 				oos2.writeUnshared(msg);
 			}
 		}
@@ -482,15 +505,13 @@ public class ServerHandleOne implements Runnable {
 		switch(from_who){
 		case 1:
 			FighterInstance fi_a=p1_fi[atk_id];
-			FighterInstance fi_d=p2_fi[atkd_id];
-			
-			String condition="";
-			
-			int hit_rt=fi_a.true_hit;
-			int block_rt=fi_d.true_block;
-			
-			int dmg=(int) (fi_a.true_attack*Constants.NORMAL_ATTACK_MODIFY-fi_d.true_defence*Constants.NORMAL_DEFENCE_MODIFY);
-			
+			FighterInstance fi_d=p2_fi[atkd_id];			
+			String condition="";		
+			int hit_rt=fi_a.getActualHit();
+			int block_rt=fi_d.getActualBlock();		
+			int act_attack=fi_a.getActualAttack();
+			int act_def=fi_d.getActualDefence();
+			int dmg=(int) (act_attack*Constants.NORMAL_ATTACK_MODIFY-act_def*Constants.NORMAL_DEFENCE_MODIFY);		
 			int first_block=(int) (Math.random()*100);
 			if (first_block<=block_rt){
 				condition+="\t格挡!";
@@ -498,6 +519,10 @@ public class ServerHandleOne implements Runnable {
 				int mul=Constants.NORMAL_BLOCK_MAX-Constants.NORMAL_BLOCK_MIN;
 				
 				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
+				if (block_rt>=100){
+					how_much+=block_rt-100;
+					if (how_much>=100) how_much=100;
+				}
 				condition+="格挡住"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1- how_much/100.0));
 			}
@@ -510,6 +535,11 @@ public class ServerHandleOne implements Runnable {
 					int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
 					
 					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
+					
+					if (hit_rt>=100){
+						how_much+=hit_rt-100;
+					}
+					
 					condition+="暴击造成额外"+how_much+"%的伤害\n";
 					dmg=(int) (dmg*(1+ how_much/100.0));
 				}
@@ -608,10 +638,17 @@ public class ServerHandleOne implements Runnable {
 			fi_a=p2_fi[atk_id];
 			fi_d=p1_fi[atkd_id];
 			
-			hit_rt=fi_a.true_hit;
-			block_rt=fi_d.true_block;
+
 			
-			dmg=(int) (fi_a.true_attack*Constants.NORMAL_ATTACK_MODIFY-fi_d.true_defence*Constants.NORMAL_DEFENCE_MODIFY);
+			hit_rt=fi_a.getActualHit();
+			block_rt=fi_d.getActualBlock();
+			
+			
+			act_attack=fi_a.getActualAttack();
+			act_def=fi_d.getActualDefence();
+			
+			
+			dmg=(int) (act_attack*Constants.NORMAL_ATTACK_MODIFY-act_def*Constants.NORMAL_DEFENCE_MODIFY);
 			
 			condition="";
 			
@@ -623,6 +660,10 @@ public class ServerHandleOne implements Runnable {
 				
 				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
 				
+				if (block_rt>=100){
+					how_much+=block_rt-100;
+					if (how_much>=100) how_much=100;
+				}
 				
 				condition+="格挡住"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1- how_much/100.0));
@@ -637,6 +678,9 @@ public class ServerHandleOne implements Runnable {
 					
 					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
 					
+					if (hit_rt>=100){
+						how_much+=hit_rt-100;
+					}
 					
 					condition+="暴击造成额外"+how_much+"%的伤害\n";
 					dmg=(int) (dmg*(1+ how_much/100.0));
@@ -748,11 +792,14 @@ public class ServerHandleOne implements Runnable {
 		
 		String des1="【"+attacker+"】的["+name+"]发动了必杀技------"+skill_name+"\n";
 		
-		int  dmg=(int) (wo.true_attack*rate*Constants.POWER_ATTACK_MODIFY-ta.true_defence*Constants.POWER_DEFENCE_MODIFY);
+		int act_attack=wo.getActualAttack();
+		int act_def=ta.getActualDefence();
+		
+		int  dmg=(int) (act_attack*rate*Constants.POWER_ATTACK_MODIFY-act_def*Constants.POWER_DEFENCE_MODIFY);
 		
 		
-		int hit_rt=wo.true_hit;
-		int block_rt=ta.true_block;
+		int hit_rt=wo.getActualHit();
+		int block_rt=ta.getActualBlock();
 		
 		
 		
@@ -765,6 +812,12 @@ public class ServerHandleOne implements Runnable {
 			int mul=Constants.POWER_BLOCK_MAX-Constants.POWER_BLOCK_MIN;
 			
 			int how_much=(int) (Math.random()*mul)+Constants.POWER_BLOCK_MIN;
+			
+			if (block_rt>=100){
+				how_much+=block_rt-100;
+				if (how_much>=100) how_much=100;
+			}
+			
 			
 			
 			condition+="格挡住"+how_much+"%的伤害\n";
@@ -780,6 +833,9 @@ public class ServerHandleOne implements Runnable {
 				
 				int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
 				
+				if (hit_rt>=100){
+					how_much+=hit_rt-100;
+				}
 				
 				condition+="暴击造成额外"+how_much+"%的伤害\n";
 				dmg=(int) (dmg*(1+ how_much/100.0));
@@ -814,40 +870,74 @@ public class ServerHandleOne implements Runnable {
 	}
 	
 	public void ConductOnePower(int from_who, int atk_id, int atkd_id) {
-		switch(from_who){
-		case 1:
-			FighterInstance wo=p1_fi[atk_id];
+		
+		//攻击者id ---  atk_id
+		//被攻击者id --- atkd_id 仅仅指单攻的情况
+		
+		HashSet<Integer> index_attacked=new HashSet<Integer>();
+		
+		FighterInstance []atks=null;
+		FighterInstance []defs=null;
+		String name_atk=null;
+		String name_def=null;
+		if (from_who==1){
+			atks=p1_fi;
+			defs=p2_fi;
+			name_atk=name1;
+			name_def=name2;
+		}
+		else{
+			atks=p2_fi;
+			defs=p1_fi;
+			name_atk=name2;
+			name_def=name1;			
+		}
+		
+		
+		
+
+			FighterInstance wo=atks[atk_id];
 			int skill_type=wo.skill_type_i;
 			wo.anger=0;
 			
 			switch(skill_type){
 			case 0:
-				
+				//排杀
+				index_attacked.add(atkd_id);
 				if (atkd_id<=2){
-					FighterInstance fi1=p2_fi[atkd_id];
+					FighterInstance fi1=defs[atkd_id];
 					
-					String log1=generateInfo(name1, wo, name2, fi1);
 					
-					if (p2_fi[atkd_id+3].hp>0){
-						FighterInstance fi2=p2_fi[atkd_id+3];
-						log1+=generateInfo(name1, wo, name2, fi2);
+					String log1=generateInfo(name_atk, wo, name_def, fi1);
+					
+					if (defs[atkd_id+3].hp>0){
+						FighterInstance fi2=defs[atkd_id+3];
+						
+						index_attacked.add(atkd_id+3);
+						
+						log1+=generateInfo(name_atk, wo, name_def, fi2);
 					}
 					
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is sent
 				}
 				else{
 					//一定是后排 可能前排已经挂了,可能没有
-					FighterInstance fi1=p2_fi[atkd_id];
+					FighterInstance fi1=defs[atkd_id];
 					
-					String log1=generateInfo(name1, wo, name2, fi1);
 					
-					if (p2_fi[atkd_id-3].hp>0){
-						FighterInstance fi2=p2_fi[atkd_id-3];
-						log1+=generateInfo(name1, wo, name2, fi2);
+					
+					String log1=generateInfo(name_atk, wo, name_def, fi1);
+					
+					if (defs[atkd_id-3].hp>0){
+						FighterInstance fi2=defs[atkd_id-3];
+						
+						index_attacked.add(atkd_id-3);
+						
+						log1+=generateInfo(name_atk, wo, name_def, fi2);
 					}
 					
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is sent
 				}
 				
@@ -857,11 +947,13 @@ public class ServerHandleOne implements Runnable {
 			case 1:
 				//单体
 				{
-				FighterInstance fi1=p2_fi[atkd_id];
+				FighterInstance fi1=defs[atkd_id];
 				
-				String log1=generateInfo(name1, wo, name2, fi1);
+				index_attacked.add(atkd_id);
 				
-				sendPowerResult(log1, 1, atk_id);
+				String log1=generateInfo(name_atk, wo, name_def, fi1);
+				
+				CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 				
 				//log1 is sent 
 				
@@ -874,11 +966,14 @@ public class ServerHandleOne implements Runnable {
 				{
 					String log1="";
 					for (int i=0;i<6;i++){
-						FighterInstance fi1=p2_fi[i];
-						if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+						FighterInstance fi1=defs[i];
+						if (fi1.hp>0){
+							log1+=generateInfo(name_atk, wo, name_def, fi1);
+							index_attacked.add(i);
+						}
 					}
 					
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is used
 				}
 				break;
@@ -888,12 +983,12 @@ public class ServerHandleOne implements Runnable {
 				{
 					String log1="";
 					for (int i=0;i<6;i++){
-						FighterInstance fi1=p1_fi[i];
+						FighterInstance fi1=atks[i];
 						if (fi1.hp<=0) continue;
 						int orig=fi1.hp;
-						int restore= (int) (wo.true_attack*wo.true_skill_ratio*1.5);
+						int restore= (int) (wo.getActualAttack()*wo.true_skill_ratio*1.5);
 
-						int hit=wo.true_hit;
+						int hit=wo.getActualHit();
 						int restore_baoji=(int) (Math.random()*100);
 						if (restore_baoji<=hit){
 							
@@ -901,76 +996,91 @@ public class ServerHandleOne implements Runnable {
 							
 							int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
 							
+							if (hit>=100){
+								how_much+=hit-100;
+							}
+							
 							restore=(int) (restore*(1+how_much/100.0));
 						}
 						
 						fi1.hp+=restore;
 						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
 						int true_res=fi1.hp-orig;
-						log1+="\t【"+name1+"】的["+wo.name+"]对["+fi1.name+"]进行回血:"+true_res+"\n";
+						log1+="\t【"+name_atk+"】的["+wo.name+"]对["+fi1.name+"]进行回血:"+true_res+"\n";
 						
 					}
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,null);
 				}
 				
 				
 				break;
 			case 4:
-				//前排全杀
+				//前列全杀
 				{
 					String log1="";
 					boolean ok=false;
 					for (int i=0;i<3;i++){
-						FighterInstance fi1=p2_fi[i];
+						FighterInstance fi1=defs[i];
 						if (fi1.hp>0){
+							index_attacked.add(i);
 							ok=true;
-							log1+=generateInfo(name1, wo, name2, fi1);
+							log1+=generateInfo(name_atk, wo, name_def, fi1);
 						}
 					}
 					if (!ok){
 						for (int i=3;i<6;i++){
-							FighterInstance fi1=p2_fi[i];
-							if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+							FighterInstance fi1=defs[i];
+							if (fi1.hp>0){
+								index_attacked.add(i);
+								log1+=generateInfo(name_atk, wo, name_def, fi1);
+							}
 						}
 					}
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is sent
 					
 				}
 				
 				break;
 			case 5:
+				//后列全杀
 				{
 					String log1="";
 					boolean ok=false;
 					for (int i=3;i<6;i++){
-						FighterInstance fi1=p2_fi[i];
+						FighterInstance fi1=defs[i];
 						if (fi1.hp>0){
 							ok=true;
-							log1+=generateInfo(name1, wo, name2, fi1);
+							index_attacked.add(i);
+							log1+=generateInfo(name_atk, wo, name_def, fi1);
 						}
 					}
 					if (!ok){
 						for (int i=0;i<3;i++){
-							FighterInstance fi1=p2_fi[i];
-							if (fi1.hp>0) log1+=generateInfo(name1, wo, name2, fi1);
+							FighterInstance fi1=defs[i];
+							if (fi1.hp>0){
+								index_attacked.add(i);
+								log1+=generateInfo(name_atk, wo, name_def, fi1);
+							}
 						}
 					}
 					
-					sendPowerResult(log1, 1, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is sent
 			
 				}
 				//后排全杀
 				break;
 			case 6:
-				
+				//后列单杀
 				{
-				FighterInstance fi1=p2_fi[atkd_id];
+				FighterInstance fi1=defs[atkd_id];
 				
-				String log1=generateInfo(name1, wo, name2, fi1);
+				index_attacked.add(atkd_id);
 				
-				sendPowerResult(log1, 1, atk_id);
+				String log1=generateInfo(name_atk, wo, name_def, fi1);
+				
+				CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 				//log1 is sent 
 				
 				}
@@ -981,222 +1091,169 @@ public class ServerHandleOne implements Runnable {
 				{
 					String log1="";
 					for (int i=0;i<3;i++){
+						ArrayList<Integer> all_live_index=new ArrayList<Integer>();
 						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
 						for (int j=0;j<6;j++){
-							if(p2_fi[j].hp>0) all_live.add(p2_fi[j]);
+							if(defs[j].hp>0){
+								all_live.add(defs[j]);
+								all_live_index.add(j);
+							}
 						}
 						if (all_live.size()==0){
-							sendPowerResult(log1, 1, atk_id);
+							CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 							break;
 						}
 						int sz=all_live.size();
 						int who_luck=(int)(Math.random()*sz);
+						index_attacked.add(all_live_index.get(who_luck));
 						FighterInstance fi1=all_live.get(who_luck);
-						log1+=generateInfo(name1, wo, name2, fi1);
+						log1+=generateInfo(name_atk, wo, name_def, fi1);
 					}
 					
-					sendPowerResult(log1, 1, atk_id);
-					//log1 is sent
-				}
-				//随机3人杀
-			}
-			
-			break;
-		case 2:
-
-			wo=p2_fi[atk_id];
-			skill_type=wo.skill_type_i;
-			wo.anger=0;
-			
-			switch(skill_type){
-			case 0:
-				
-				if (atkd_id<=2){
-					FighterInstance fi1=p1_fi[atkd_id];
-					
-					String log1=generateInfo(name2, wo, name1, fi1);
-					
-					if (p1_fi[atkd_id+3].hp>0){
-						FighterInstance fi2=p1_fi[atkd_id+3];
-						log1+=generateInfo(name2, wo, name1, fi2);
-					}
-					
-					sendPowerResult(log1, 2, atk_id);
-					//log1 is sent
-				}
-				else{
-					//一定是后排 可能前排已经挂了,可能没有
-					FighterInstance fi1=p1_fi[atkd_id];
-					
-					String log1=generateInfo(name2, wo, name1, fi1);
-					
-					if (p1_fi[atkd_id-3].hp>0){
-						FighterInstance fi2=p1_fi[atkd_id-3];
-						log1+=generateInfo(name2, wo, name1, fi2);
-					}
-					
-					sendPowerResult(log1, 2, atk_id);
-					//log1 is sent
-				}
-				
-				
-				
-				break;
-			case 1:
-				//单体
-				{
-				FighterInstance fi1=p1_fi[atkd_id];
-				
-				String log1=generateInfo(name2, wo, name1, fi1);
-				
-				sendPowerResult(log1, 2, atk_id);
-				
-				//log1 is sent 
-				
-				}
-				
-				
-				break;
-			case 2:
-				//AOE
-				{
-					String log1="";
-					for (int i=0;i<6;i++){
-						FighterInstance fi1=p1_fi[i];
-						if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
-					}
-					
-					sendPowerResult(log1, 2, atk_id);
-					//log1 is used
-				}
-				break;
-			case 3:
-				//加血
-				//直接在这里写
-				{
-					String log1="";
-					for (int i=0;i<6;i++){
-						FighterInstance fi1=p2_fi[i];
-						if (fi1.hp<=0) continue;
-						int orig=fi1.hp;
-						int restore= (int) (wo.true_attack*wo.true_skill_ratio);
-						
-						
-						int hit=wo.true_hit;
-						int restore_baoji=(int) (Math.random()*100);
-						if (restore_baoji<=hit){
-							int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;
-							
-							int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
-							
-							restore=(int) (restore*(1+how_much/100.0));
-						}
-						
-						fi1.hp+=restore;
-						if (fi1.hp>fi1.max_hp) fi1.hp=fi1.max_hp;
-						int true_res=fi1.hp-orig;
-						log1+="\t【"+name2+"】的["+wo.name+"]对["+fi1.name+"]进行回血"+true_res+"\n";
-					}
-					sendPowerResult(log1, 2, atk_id);
-				}
-				
-				
-				break;
-			case 4:
-				//前排全杀
-				{
-					String log1="";
-					boolean ok=false;
-					for (int i=0;i<3;i++){
-						FighterInstance fi1=p1_fi[i];
-						if (fi1.hp>0){
-							ok=true;
-							log1+=generateInfo(name2, wo, name1, fi1);
-						}
-					}
-					if (!ok){
-						for (int i=3;i<6;i++){
-							FighterInstance fi1=p1_fi[i];
-							if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
-						}
-					}
-					sendPowerResult(log1, 2, atk_id);
-					//log1 is sent
-					
-				}
-				
-				break;
-			case 5:
-				{
-					String log1="";
-					boolean ok=false;
-					for (int i=3;i<6;i++){
-						FighterInstance fi1=p1_fi[i];
-						if (fi1.hp>0){
-							ok=true;
-							log1+=generateInfo(name2, wo, name1, fi1);
-						}
-					}
-					if (!ok){
-						for (int i=0;i<3;i++){
-							FighterInstance fi1=p1_fi[i];
-							if (fi1.hp>0) log1+=generateInfo(name2, wo, name1, fi1);
-						}
-					}
-					
-					sendPowerResult(log1, 2, atk_id);
-					//log1 is sent
-			
-				}
-				//后排全杀
-				break;
-			case 6:
-				
-				{
-				FighterInstance fi1=p1_fi[atkd_id];
-				
-				String log1=generateInfo(name2, wo, name1, fi1);
-				
-				sendPowerResult(log1, 2, atk_id);
-				//log1 is sent 
-				
-				}
-				
-				//后排单杀
-				break;
-			case 7:
-				{
-					String log1="";
-					for (int i=0;i<3;i++){
-						ArrayList<FighterInstance> all_live=new ArrayList<FighterInstance>();
-						for (int j=0;j<6;j++){
-							if(p1_fi[j].hp>0) all_live.add(p1_fi[j]);
-						}
-						if (all_live.size()==0){
-							sendPowerResult(log1, 2, atk_id);
-							break;
-						}
-						int sz=all_live.size();
-						int who_luck=(int)(Math.random()*sz);
-						FighterInstance fi1=all_live.get(who_luck);
-						log1+=generateInfo(name2, wo, name1, fi1);
-					}
-					
-					sendPowerResult(log1, 2, atk_id);
+					CalSkillStateAndsendPowerResult(log1, from_who, atk_id,index_attacked);
 					//log1 is sent
 				}
 				//随机3人杀
 			}
 			
 	
-			
-			break;
+	
+	
+		
+	}
+	
+	public void giveNearbyState(FighterInstance []mine,int index,SkillState ss){
+		FighterInstance fi_me=mine[index];
+		fi_me.addState(ss);
+		HashSet [] index_hs=new HashSet[6];
+		for (int i=0;i<6;i++) index_hs[i]=new HashSet<Integer>();
+		index_hs[0].add(1);index_hs[0].add(3);
+		index_hs[1].add(0);index_hs[1].add(2);index_hs[1].add(4);
+		index_hs[2].add(1);index_hs[2].add(5);
+		index_hs[3].add(0);index_hs[3].add(4);
+		index_hs[4].add(1);index_hs[4].add(3);index_hs[4].add(5);
+		index_hs[5].add(2);index_hs[5].add(4);
+		
+		HashSet<Integer> a=index_hs[index];
+		for (Integer ii:a){
+			FighterInstance fi=mine[ii];
+			if (fi.hp>0)
+				fi.addState(ss);
 		}
 		
 	}
 	
-	
-	public void sendPowerResult(String logs,int whosturn,int attk){
+	public void CalSkillStateAndsendPowerResult(String logs,int whosturn,int attk,HashSet<Integer> atkd_id){
+		FighterInstance attacker=null;
+		FighterInstance []all_atks=null;
+		FighterInstance []all_defs=null;
+		
+		if (whosturn==1){
+			attacker=p1_fi[attk];
+			all_atks=p1_fi;
+			all_defs=p2_fi;
+		}
+		else{
+			attacker=p2_fi[attk];
+			all_atks=p2_fi;
+			all_defs=p1_fi;
+		}
+		
+		String skill_extra_des=attacker.original_base.skill_state_description;
+		int skill_extra_tp=attacker.original_base.skill_state_type;
+		int skill_extra_ratio=attacker.original_base.skill_state_ratio;
+		
+		SkillState ss=new SkillState(skill_extra_des,skill_extra_tp,skill_extra_ratio);
+		
+		switch(skill_extra_tp){
+		case 0:
+		case 1:
+		case 8:
+		case 14:
+		case 15:
+		case 19:
+		case 20:
+			attacker.addState(ss);
+			break;
+			
+		case 2:
+			for (FighterInstance fi:all_atks){
+				if (fi.hp>0) fi.addState(ss);
+			}
+			break;
+		case 3:
+			if (all_atks[0].hp>0 || all_atks[1].hp>0 || all_atks[2].hp>0){
+				for (int i=0;i<3;i++){
+					if (all_atks[i].hp>0) all_atks[i].addState(ss);
+				}
+			}
+			else{
+				for (int i=3;i<6;i++){
+					if (all_atks[i].hp>0) all_atks[i].addState(ss);
+				}
+			}
+			break;
+			
+		case 4:
+		case 13:
+			for (int u:atkd_id){
+				FighterInstance fi=all_defs[u];
+				if (fi.hp>0){
+					fi.addState(ss);
+				}
+			}
+			break;
+			
+		case 5:
+			giveNearbyState(all_atks, attk, ss);
+			break;
+		case 6:
+			//判定眩晕
+		case 9:
+			//判定沉默
+			for (int u:atkd_id){
+				FighterInstance fi=all_defs[u];
+				if (fi.hp>0){
+					double chance=Math.random()*100;
+					if (chance<=skill_extra_ratio)
+						fi.addState(ss);
+				}
+			}
+			break;
+		case 7:
+			//not support now
+			break;
+		case 10:
+			//not support now
+			break;
+		case 11:
+			//not support now
+			break;
+		case 12:
+			//降怒
+			for (int u:atkd_id){
+				FighterInstance fi=all_defs[u];
+				if (fi.hp>0){
+					fi.anger-=skill_extra_ratio;
+					if (fi.anger<0) fi.anger=0;
+				}
+			}
+			break;
+
+
+		case 16:
+		case 17:
+		case 18:
+			for (FighterInstance fi:all_atks){
+				if (Constants.ORCH_NAME.contains(fi.name))
+					fi.addState(ss);
+			}
+			break;	
+		}
+		//over
+		
+		
+		
 		Message msg=new Message(4);
 		msg.i_info1=0;
 		msg.i_info2=whosturn;

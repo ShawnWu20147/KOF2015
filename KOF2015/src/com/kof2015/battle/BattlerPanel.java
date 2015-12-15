@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 
 import javax.swing.BorderFactory;
@@ -15,6 +17,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 import com.common.Constants;
 import com.common.FighterInstance;
@@ -247,7 +251,7 @@ public class BattlerPanel extends JPanel {
 			statusPanel.setLayout(new GridLayout(0, 1));
 			for (int i = 0; i < 4; i++)
 			{
-				JLabel stateLabel = new JLabel();
+				final JLabel stateLabel = new JLabel();
 				stateLabel.setPreferredSize(new Dimension(24, 24));
 				
 				/*
@@ -256,7 +260,66 @@ public class BattlerPanel extends JPanel {
 					stateLabel.setIcon(image);
 				}
 				*/
-				statusPanel.add(stateLabel);
+				
+				
+				
+				if (i==0){
+					
+					String st_path="img/state00.png";
+					File f=new File(st_path);
+					if (!f.exists())
+						st_path="../img/state00.png";
+					
+					ImageIcon image = new ImageIcon(st_path);
+					
+					stateLabel.setIcon(image);
+					statusPanel.add(stateLabel);
+					
+					stateLabel.addMouseListener(new MouseListener() {
+						
+					
+					
+					
+						@Override
+						public void mouseClicked(MouseEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+	
+						@Override
+						public void mouseEntered(MouseEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+	
+						@Override
+						public void mouseExited(MouseEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+	
+						@Override
+						public void mousePressed(MouseEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+	
+						@Override
+						public void mouseReleased(MouseEvent e) {
+							// TODO Auto-generated method stub
+							JFrame jf=new JFrame();
+							jf.setTitle("¸ñ¶·¼Ò¶îÍâ×´Ì¬");
+							jf.setLocationRelativeTo(stateLabel);
+							JTextArea jt=new JTextArea();
+							jt.setEditable(false);
+							jt.setText(myfi.getStateInfo());
+							jf.add(jt);
+							jf.setSize(400, 300);
+							jf.setVisible(true);
+						}
+					});
+				}
+				
 			}
 		}
 		add(statusPanel, BorderLayout.EAST);

@@ -622,6 +622,7 @@ public class ClientOneGame implements Runnable{
 			e.printStackTrace();
 		}
 		
+		/*
 		Timer tm=new Timer();
 		TimerTask tt=new TimerTask() { 
 			@Override
@@ -632,11 +633,16 @@ public class ClientOneGame implements Runnable{
             }
 		};
 		tm.schedule(tt, 500);
+		*/
 		
 	}
 	
 	
 	public void Battle_Method(){
+		
+		jf_formation.setVisible(false);
+		jf_formation.dispose();
+		
 		extra_info=new JTextArea();
 		extra_info.setEditable(false);
 		JFrame jf_extra=new JFrame();

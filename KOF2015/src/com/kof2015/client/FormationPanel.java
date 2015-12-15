@@ -224,6 +224,7 @@ public class FormationPanel extends JPanel {
 		frame.pack();
 		frame.setVisible(true);
 		
+		/*
 		FighterInfo[] fighters = new FighterInfo[ 8 ];
 		for( int i = 0; i < fighters.length; i++ )
 		{
@@ -248,6 +249,8 @@ public class FormationPanel extends JPanel {
 					(double)((int)(Math.random() * 10) + (int)(Math.random() * 10) * 0.1 )
 					);
 		}
+		
 		testObject.passingCandidates( fighters );
+		*/
 	}
 }

@@ -46,6 +46,8 @@ public class BattlePanel extends JPanel {
 	
 	int what_i;
 	
+	JLabel timeLabel;
+	
 	public void setWhatI(int what){
 		this.what_i=what;
 	}
@@ -63,7 +65,7 @@ public class BattlePanel extends JPanel {
 		this.tcog=cog;
 		setLayout(new BorderLayout(5, 10));
 		JPanel container = new JPanel();
-		JLabel timeLabel = new JLabel();
+		timeLabel = new JLabel();
 		
 		ActionListener attack_l=new ActionListener() {
 			
@@ -369,9 +371,14 @@ public class BattlePanel extends JPanel {
 					int skill_type=ret.getInt(17);
 					double skill_ratio=ret.getDouble(18);
 					
+					
+					String skill_state_description=ret.getString(19);
+					int skill_state_type=ret.getInt(20);
+					int skill_state_ratio=ret.getInt(21);
+					
 					FighterInfo fi=new FighterInfo(id,name,ability,fighter_type,base_hp,base_attack,base_defence,base_hit,base_block
 							,base_attack_anger,base_attacked_anger,base_power_anger,base_powered_anger,description,skill_name,skill_description
-							,skill_type,skill_ratio);
+							,skill_type,skill_ratio,skill_state_description,skill_state_type,skill_state_ratio);
 					
 					//if (id==1) System.out.println(fi.toStringHtml());
 					all_fighters.add(fi);
@@ -420,7 +427,7 @@ public class BattlePanel extends JPanel {
 		
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//frame.add(new BattlePanel(fi_me,fi_opp));
+		frame.add(new BattlePanel(null,fi_me,fi_opp));
 		frame.pack();
 		frame.setResizable(false);
 		
