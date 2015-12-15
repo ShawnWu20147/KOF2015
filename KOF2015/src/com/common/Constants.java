@@ -4,7 +4,7 @@ import java.util.HashSet;
 
 public class Constants {
 	public static final int MAX_ANGER=1000;
-	public static final int BASE_ANGER_ATTACK=300;
+	public static final int BASE_ANGER_ATTACK=550;
 	public static final int DEFENCE_ANGER_INCREASE=150;
 	public static final int SKILL_ANGER_INCREASE=200;
 	public static final int KILL_BONUS_ANGER=200;

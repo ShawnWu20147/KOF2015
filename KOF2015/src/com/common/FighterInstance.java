@@ -73,10 +73,11 @@ public class FighterInstance implements Serializable{
 		
 		
 		
-		max_hp=(int) (base.base_hp*(2+ratio));
-		hp=(int) (base.base_hp*(2+ratio));
+		//max_hp=(int) (base.base_hp*(1+ratio));
+		//hp=(int) (base.base_hp*(1+ratio));
 		
-		
+		max_hp=(int) (base.base_hp+ratio*3000);
+		hp=max_hp;
 		
 		true_attack=base.base_attack+atk_plus;
 		true_defence=base.base_defence;
@@ -129,7 +130,7 @@ public class FighterInstance implements Serializable{
 		else
 			anger=0;
 		
-		anger=900;
+		
 		
 		isDead=false;
 		
@@ -182,6 +183,7 @@ public class FighterInstance implements Serializable{
 		int base=true_attack;
 		for (SkillState ss:all_ss){
 			int tp=ss.type;
+			//System.out.println("tp is "+tp+" value is "+ss.ratio);
 			if (Constants.ATTACK_BUFF_TYPE_INC.contains(tp)){
 				base+=ss.ratio;
 			}
@@ -317,7 +319,7 @@ public class FighterInstance implements Serializable{
 			}
 		}
 		rs+="</html>";
-		System.out.println("BUFF HTML="+rs);
+		//System.out.println("BUFF HTML="+rs);
 		return rs;
 	}
 	
@@ -343,7 +345,7 @@ public class FighterInstance implements Serializable{
 			}
 		}
 		rs+="</html>";
-		System.out.println("DEBUFF HTML="+rs);
+		//System.out.println("DEBUFF HTML="+rs);
 		return rs;
 	}	
 	

@@ -164,7 +164,7 @@ public class ServerHandleOne implements Runnable {
 						assert(fi.length==6);
 						if (toh.from==1){
 							p1_fi=new FighterInstance[6];
-							//前排血量提高20%  后排攻击加50
+							//前排血量提高1500  后排攻击加50
 							for (int i=0;i<6;i++){
 								if (i<=2)
 									p1_fi[i]=new FighterInstance(fi[i], 0.2,0);
@@ -504,80 +504,102 @@ public class ServerHandleOne implements Runnable {
 
 	public void ConductOneAttak(int from_who, int atk_id, int atkd_id) {
 		System.out.println("一次攻击:"+from_who+" :"+atk_id+" "+atkd_id);
-		switch(from_who){
-		case 1:
-			FighterInstance fi_a=p1_fi[atk_id];
-			FighterInstance fi_d=p2_fi[atkd_id];			
+		
+		FighterInstance fi_atk=null;
+		FighterInstance fi_def=null;
+		String name_atk=null;
+		String name_def=null;
+		FighterInstance []all_atkd=null;
+		if (from_who==1){
+			fi_atk=p1_fi[atk_id];
+			fi_def=p2_fi[atkd_id];
+			name_atk=name1;
+			name_def=name2;
+			all_atkd=p2_fi;
+		}
+		else{
+			fi_atk=p2_fi[atk_id];
+			fi_def=p1_fi[atkd_id];
+			name_atk=name2;
+			name_def=name1;	
+			all_atkd=p1_fi;
+		}
+		
+		
+						
 			String condition="";		
-			int hit_rt=fi_a.getActualHit();
-			int block_rt=fi_d.getActualBlock();		
-			int act_attack=fi_a.getActualAttack();
-			int act_def=fi_d.getActualDefence();
+			int hit_rt=fi_atk.getActualHit();
+			int block_rt=fi_def.getActualBlock();		
+			int act_attack=fi_atk.getActualAttack();
+			int act_def=fi_def.getActualDefence();
+			
+			System.out.println("本次攻击:"+act_attack+":"+act_def);
+			
 			int dmg=(int) (act_attack*Constants.NORMAL_ATTACK_MODIFY-act_def*Constants.NORMAL_DEFENCE_MODIFY);		
 			int first_block=(int) (Math.random()*100);
+			int second_hit=(int)(Math.random()*100);
+			
+			int how_much_hit=0;
+			int how_much_def=0;
+			
 			if (first_block<=block_rt){
 				condition+="\t格挡!";
 				
 				int mul=Constants.NORMAL_BLOCK_MAX-Constants.NORMAL_BLOCK_MIN;
 				
-				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
+				how_much_def=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
 				if (block_rt>=100){
-					how_much+=block_rt-100;
-					if (how_much>=100) how_much=100;
+					how_much_def+=block_rt-100;
 				}
-				condition+="格挡住"+how_much+"%的伤害\n";
-				dmg=(int) (dmg*(1- how_much/100.0));
+				condition+="格挡住"+how_much_def+"%的伤害\n";
+				
 			}
-			else{
+			if (second_hit<=hit_rt){
 				//判断暴击
-				int second_hit=(int) (Math.random()*100);
-				if (second_hit<=hit_rt){
-					condition+="\t暴击!";
-					
-					int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
-					
-					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
-					
-					if (hit_rt>=100){
-						how_much+=hit_rt-100;
-					}
-					
-					condition+="暴击造成额外"+how_much+"%的伤害\n";
-					dmg=(int) (dmg*(1+ how_much/100.0));
+				
+				condition+="\t暴击!";
+				int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
+				how_much_hit=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
+				if (hit_rt>=100){
+					how_much_hit+=hit_rt-100;
 				}
+					
+				condition+="暴击造成额外"+how_much_hit+"%的伤害\n";
+			}
+			int overall_dmg=(int) (dmg*(1+  (how_much_hit-how_much_def)/100.0));
+			if (overall_dmg<0) overall_dmg=0;
+			
+			String info1="【"+name_atk+"】的["+fi_atk.name+"]对【"+name_def+"】的["+fi_def.name+"]发动了普通攻击\n";
+			String info3=info1+condition+"\t本次攻击造成了"+overall_dmg+"的伤害\n";
+			
+			fi_def.hp-=overall_dmg;
+			
+			
+			fi_atk.anger+=fi_atk.true_atk_anger;
+			fi_def.anger+=fi_def.true_atkd_anger;
+			
+			if (fi_atk.fighter_type==1) fi_atk.anger+=Constants.SKILL_ANGER_INCREASE;
+			if (fi_def.fighter_type==2) fi_def.anger+=Constants.DEFENCE_ANGER_INCREASE;
+			
+			
+			if (fi_def.hp<=0){
+				fi_def.isDead=true;
+				fi_def.anger=0;
+				info3+="\t"+fi_def.name+"倒下了!\n";
+				
+				fi_atk.anger+=Constants.KILL_BONUS_ANGER;
+				
 			}
 			
-			String info1="【"+name1+"】的["+fi_a.name+"]对【"+name2+"】的["+fi_d.name+"]发动了普通攻击\n";
-			String info3=info1+condition+"\t本次攻击造成了"+dmg+"的伤害\n";
+			if (fi_atk.anger>Constants.MAX_ANGER) fi_atk.anger=Constants.MAX_ANGER;
+			if (fi_def.anger>Constants.MAX_ANGER) fi_def.anger=Constants.MAX_ANGER;
 			
-			fi_d.hp-=dmg;
-			
-			
-			fi_a.anger+=fi_a.true_atk_anger;
-			fi_d.anger+=fi_d.true_atkd_anger;
-			
-			if (fi_a.fighter_type==1) fi_a.anger+=Constants.SKILL_ANGER_INCREASE;
-			if (fi_d.fighter_type==2) fi_d.anger+=Constants.DEFENCE_ANGER_INCREASE;
-			
-			
-			if (fi_d.hp<=0){
-				fi_d.isDead=true;
-				fi_d.anger=0;
-				info3+="\t"+fi_d.name+"倒下了!\n";
-				
-				fi_a.anger+=Constants.KILL_BONUS_ANGER;
-				
-			}
-			
-			if (fi_a.anger>Constants.MAX_ANGER) fi_a.anger=Constants.MAX_ANGER;
-			if (fi_d.anger>Constants.MAX_ANGER) fi_d.anger=Constants.MAX_ANGER;
-			
-			System.out.println(info1);
+			//System.out.println(info1);
 			
 			Message msg_1=new Message(4);
 			
 			msg_1.i_info1=1;	//normal attack
-			msg_1.i_info2=1;	//whose turn
+			msg_1.i_info2=from_who;	//whose turn
 			
 			msg_1.i_info3=atk_id;	//attacker's id
 			
@@ -606,171 +628,30 @@ public class ServerHandleOne implements Runnable {
 			msg_1=null;
 			
 			boolean over=true;
-			for (FighterInstance fp2:p2_fi){
+			for (FighterInstance fp2:all_atkd){
 				if (fp2.hp>0){
 					over=false;
 					break;
 				}
 			}
 			if (over){
-				// p1 win
+				// who wins?
 				Message msg_over=new Message(4);
 				msg_over.i_info1=2;
-				msg_over.i_info2=1;
+				msg_over.i_info2=from_who;	//谁的回合
 				msg_over.s_info1="恭喜你赢了!";
 				try {
-					oos1.writeUnshared(msg_over);
-					
-					msg_over.s_info1="你输了,傻叉!";
-					oos2.writeUnshared(msg_over);
-					
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-			}
-			
-			
-			
-			
-			
-			break;
-		case 2:
-			
-			fi_a=p2_fi[atk_id];
-			fi_d=p1_fi[atkd_id];
-			
-
-			
-			hit_rt=fi_a.getActualHit();
-			block_rt=fi_d.getActualBlock();
-			
-			
-			act_attack=fi_a.getActualAttack();
-			act_def=fi_d.getActualDefence();
-			
-			
-			dmg=(int) (act_attack*Constants.NORMAL_ATTACK_MODIFY-act_def*Constants.NORMAL_DEFENCE_MODIFY);
-			
-			condition="";
-			
-			first_block=(int) (Math.random()*100);
-			if (first_block<=block_rt){
-				condition+="\t格挡!";
-				
-				int mul=Constants.NORMAL_BLOCK_MAX-Constants.NORMAL_BLOCK_MIN;
-				
-				int how_much=(int) (Math.random()*mul)+Constants.NORMAL_BLOCK_MIN;
-				
-				if (block_rt>=100){
-					how_much+=block_rt-100;
-					if (how_much>=100) how_much=100;
-				}
-				
-				condition+="格挡住"+how_much+"%的伤害\n";
-				dmg=(int) (dmg*(1- how_much/100.0));
-			}
-			else{
-				//判断暴击
-				int second_hit=(int) (Math.random()*100);
-				if (second_hit<=hit_rt){
-					condition+="\t暴击!";
-					
-					int mul=Constants.NORMAL_HIT_MAX-Constants.NORMAL_HIT_MIN;
-					
-					int how_much=(int) (Math.random()*mul)+Constants.NORMAL_HIT_MIN;
-					
-					if (hit_rt>=100){
-						how_much+=hit_rt-100;
+					if (from_who==1){
+						oos1.writeUnshared(msg_over);
+						msg_over.s_info1="你输了,傻叉!";
+						oos2.writeUnshared(msg_over);
+					}
+					else{
+						oos2.writeUnshared(msg_over);		
+						msg_over.s_info1="你输了,傻叉!";
+						oos1.writeUnshared(msg_over);
 					}
 					
-					condition+="暴击造成额外"+how_much+"%的伤害\n";
-					dmg=(int) (dmg*(1+ how_much/100.0));
-				}
-			}
-			
-
-			info1="【"+name2+"】的["+fi_a.name+"]对【"+name1+"】的["+fi_d.name+"]发动了普通攻击\n";
-			info3=info1+condition+"\t本次攻击造成了"+dmg+"的伤害\n";
-			
-			
-			fi_d.hp-=dmg;
-			
-
-			
-			fi_a.anger+=fi_a.true_atk_anger;
-			fi_d.anger+=fi_d.true_atkd_anger;
-			
-			if (fi_a.fighter_type==1) fi_a.anger+=Constants.SKILL_ANGER_INCREASE;
-			if (fi_d.fighter_type==2) fi_d.anger+=Constants.DEFENCE_ANGER_INCREASE;
-			
-			
-			
-			if (fi_d.hp<=0){
-				fi_d.anger=0;
-				fi_d.isDead=true;
-				info3+="\t"+fi_d.name+"倒下了!\n";
-				
-				fi_a.anger+=Constants.KILL_BONUS_ANGER;
-			}
-			
-			if (fi_a.anger>Constants.MAX_ANGER) fi_a.anger=Constants.MAX_ANGER;
-			if (fi_d.anger>Constants.MAX_ANGER) fi_d.anger=Constants.MAX_ANGER;
-			
-			
-			System.out.println(info1);
-			
-
-			
-			Message msg_2=new Message(4);
-			msg_2.i_info1=1;		//normal attack
-			msg_2.i_info2=2;		//whose turn
-			
-			msg_2.s_info1=info3;
-			
-			msg_2.i_info3=atk_id;
-			
-			addFIBtoMsg(msg_2);
-			
-			for (int i=0;i<12;i++){
-				System.out.println("攻击后:"+msg_2.fi_b[i].name+" "+msg_2.fi_b[i].hp);
-			}
-			
-			msg_2.s_info2="debug";
-			
-			try{
-				oos1.reset();
-				oos2.reset();
-				
-				oos2.writeUnshared(msg_2);
-				
-				oos1.writeUnshared(msg_2);
-				
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			msg_2=null;
-			
-			
-			over=true;
-			for (FighterInstance fp1:p1_fi){
-				if (fp1.hp>0){
-					over=false;
-					break;
-				}
-			}
-			if (over){
-				// p2 win
-				Message msg_over=new Message(4);
-				msg_over.i_info1=2;
-				msg_over.i_info2=2;
-				msg_over.s_info1="恭喜你赢了!";
-				try {
-					oos2.writeUnshared(msg_over);
-					
-					msg_over.s_info1="你输了,傻叉!";
-					oos1.writeUnshared(msg_over);
-					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -780,11 +661,11 @@ public class ServerHandleOne implements Runnable {
 			
 			
 			
-
-			
-			break;
-		}
 		
+			
+		
+			
+	
 	}
 	
 	public String generateInfo(String attacker,FighterInstance wo,String defencer,FighterInstance ta){
@@ -803,47 +684,44 @@ public class ServerHandleOne implements Runnable {
 		int hit_rt=wo.getActualHit();
 		int block_rt=ta.getActualBlock();
 		
+		int how_much_hit=0;
+		int how_much_def=0;
 		
 		
 		String condition="";
 		
 		int first_block=(int) (Math.random()*100);
+		int second_hit=(int)(Math.random()*100);
+		
 		if (first_block<=block_rt){
 			condition+="\t大招被格挡!";
 			
 			int mul=Constants.POWER_BLOCK_MAX-Constants.POWER_BLOCK_MIN;
 			
-			int how_much=(int) (Math.random()*mul)+Constants.POWER_BLOCK_MIN;
+			how_much_def=(int) (Math.random()*mul)+Constants.POWER_BLOCK_MIN;
 			
 			if (block_rt>=100){
-				how_much+=block_rt-100;
-				if (how_much>=100) how_much=100;
+				how_much_def+=block_rt-100;
 			}
 			
 			
 			
-			condition+="格挡住"+how_much+"%的伤害\n";
-			dmg=(int) (dmg*(1- how_much/100.0));
+			condition+="格挡住"+how_much_def+"%的伤害\n";
+			
 		}
-		else{
-			//判断暴击
-			int second_hit=(int) (Math.random()*100);
-			if (second_hit<=hit_rt){
-				condition+="\t大招暴击!";
-				
-				int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;
-				
-				int how_much=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;
-				
-				if (hit_rt>=100){
-					how_much+=hit_rt-100;
-				}
-				
-				condition+="暴击造成额外"+how_much+"%的伤害\n";
-				dmg=(int) (dmg*(1+ how_much/100.0));
-			}
+		if (second_hit<=hit_rt){
+			condition+="\t大招暴击!";	
+			int mul=Constants.POWER_HIT_MAX-Constants.POWER_HIT_MIN;			
+			how_much_hit=(int) (Math.random()*mul)+Constants.POWER_HIT_MIN;	
+			if (hit_rt>=100){
+				how_much_hit+=hit_rt-100;
+			}			
+			condition+="暴击造成额外"+how_much_hit+"%的伤害\n";
 		}
 		
+		
+		int overall_dmg=(int) (dmg*(1+  (how_much_hit-how_much_def)/100.0));
+		if (overall_dmg<0) overall_dmg=0;
 
 
 		
@@ -852,12 +730,12 @@ public class ServerHandleOne implements Runnable {
 		
 		
 		
-		String kill="\t对【"+defencer+"】的["+ta.name+"造成了"+dmg+"的伤害\n";
+		String kill="\t对【"+defencer+"】的["+ta.name+"造成了"+overall_dmg+"的伤害\n";
 		
-		//wo.anger+=wo.true_pw_anger;
+		
 		ta.anger+=ta.true_pwd_anger;
 		
-		ta.hp-=dmg;
+		ta.hp-=overall_dmg;
 		if (ta.hp<=0){
 			ta.isDead=true;
 			ta.anger=0;
