@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 import com.common.FighterInstance;
+import com.common.SkillState;
 
 public class TroopPanel extends JPanel {
 
@@ -39,6 +40,10 @@ public class TroopPanel extends JPanel {
 				bp[i].updateHpandRage(one[i]);
 			else
 				bp[i].updateHpandRage(one[i]);
+			
+			bp[i].updateState();
+			
+			
 		}
 		
 		
@@ -54,6 +59,12 @@ public class TroopPanel extends JPanel {
 			else
 				bp[i].updateHpandRage(one[i]);
 			bp[i].updateRage(one[i]);
+			
+			//we are sure bp[i].myfi is latest
+			bp[i].updateState();
+			
+			
+			
 		}
 		
 		

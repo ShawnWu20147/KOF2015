@@ -448,6 +448,7 @@ public class ServerHandleOne implements Runnable {
 				if (ss.getRoundsLeft()<=0) need_del.add(ss);
 			}
 			for (SkillState ss:need_del){
+				System.out.println("delete state:"+ss.toString());
 				fi.all_ss.remove(ss);
 			}
 
@@ -459,6 +460,7 @@ public class ServerHandleOne implements Runnable {
 				if (ss.getRoundsLeft()<=0) need_del.add(ss);
 			}
 			for (SkillState ss:need_del){
+				System.out.println("delete state:"+ss.toString());
 				fi.all_ss.remove(ss);
 			}
 		}
@@ -1137,8 +1139,10 @@ public class ServerHandleOne implements Runnable {
 		HashSet<Integer> a=index_hs[index];
 		for (Integer ii:a){
 			FighterInstance fi=mine[ii];
-			if (fi.hp>0)
-				fi.addState(ss);
+			if (fi.hp>0){
+				SkillState ss_c=new SkillState(ss);
+				fi.addState(ss_c);
+			}
 		}
 		
 	}
@@ -1173,23 +1177,34 @@ public class ServerHandleOne implements Runnable {
 		case 15:
 		case 19:
 		case 20:
-			attacker.addState(ss);
+			SkillState ss_c=new SkillState(ss);
+			attacker.addState(ss_c);
 			break;
 			
 		case 2:
 			for (FighterInstance fi:all_atks){
-				if (fi.hp>0) fi.addState(ss);
+				if (fi.hp>0){
+					SkillState ss_cc=new SkillState(ss);
+					fi.addState(ss_cc);
+				}
 			}
 			break;
 		case 3:
 			if (all_atks[0].hp>0 || all_atks[1].hp>0 || all_atks[2].hp>0){
 				for (int i=0;i<3;i++){
-					if (all_atks[i].hp>0) all_atks[i].addState(ss);
+					if (all_atks[i].hp>0){
+						SkillState ss_cc=new SkillState(ss);
+						all_atks[i].addState(ss_cc);
+					}
 				}
 			}
 			else{
 				for (int i=3;i<6;i++){
-					if (all_atks[i].hp>0) all_atks[i].addState(ss);
+					if (all_atks[i].hp>0){
+						SkillState ss_cc=new SkillState(ss);
+						all_atks[i].addState(ss_cc);
+						
+					}
 				}
 			}
 			break;
@@ -1199,7 +1214,8 @@ public class ServerHandleOne implements Runnable {
 			for (int u:atkd_id){
 				FighterInstance fi=all_defs[u];
 				if (fi.hp>0){
-					fi.addState(ss);
+					SkillState ss_cc=new SkillState(ss);
+					fi.addState(ss_cc);
 				}
 			}
 			break;
@@ -1215,8 +1231,10 @@ public class ServerHandleOne implements Runnable {
 				FighterInstance fi=all_defs[u];
 				if (fi.hp>0){
 					double chance=Math.random()*100;
-					if (chance<=skill_extra_ratio)
-						fi.addState(ss);
+					if (chance<=skill_extra_ratio){
+						SkillState ss_cc=new SkillState(ss);
+						fi.addState(ss_cc);
+					}
 				}
 			}
 			break;
@@ -1245,8 +1263,10 @@ public class ServerHandleOne implements Runnable {
 		case 17:
 		case 18:
 			for (FighterInstance fi:all_atks){
-				if (Constants.ORCH_NAME.contains(fi.name))
-					fi.addState(ss);
+				if (Constants.ORCH_NAME.contains(fi.name)){
+					SkillState ss_cc=new SkillState(ss);
+					fi.addState(ss_cc);
+				}
 			}
 			break;	
 		}

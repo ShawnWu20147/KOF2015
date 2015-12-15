@@ -241,6 +241,113 @@ public class FighterInstance implements Serializable{
 	}
 	
 	
+	public boolean isFaint(){
+		for (SkillState ss:all_ss){
+			if (ss.type==6)
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isSilent(){
+		for (SkillState ss:all_ss){
+			if (ss.type==9)
+				return true;
+		}
+		return false;
+	}
+	
+	public String getFaintInfo(){
+		String rs="";
+		for (SkillState ss:all_ss){
+			if (ss.type==6)
+				rs+=ss.toString();
+		}
+		return rs;
+	}
+	public String getFaintInfoHTML(){
+		String rs="<html>";
+		for (SkillState ss:all_ss){
+			if (ss.type==6)
+				rs+="<p>"+ss.toString()+"</p>";
+		}
+		rs+="</html>";
+		return rs;
+	}	
+	
+	
+	
+	public String getSilentInfo(){
+		String rs="";
+		for (SkillState ss:all_ss){
+			if (ss.type==9)
+				rs+=ss.toString();
+		}
+		return rs;
+	}	
+	public String getSilentInfoHTML(){
+		String rs="<html>";
+		for (SkillState ss:all_ss){
+			if (ss.type==9)
+				rs+="<p>"+ss.toString()+"</p>";
+		}
+		rs+="</html>";
+		return rs;
+	}	
+	
+	public String getBuffInfo(){
+		String rs="";
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.ATTACK_BUFF_TYPE_INC.contains(tp) || Constants.DEFENCE_BUFF_TYPE_INC.contains(tp)
+					|| Constants.HIT_BUFF_TYPE_INC.contains(tp) || Constants.BLOCK_BUFF_TYPE_INC.contains(tp)){
+				rs+=ss.toString();
+			}
+		}
+		return rs;
+	}
+	
+	public String getBuffInfoHTML(){
+		String rs="<html>";
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.ATTACK_BUFF_TYPE_INC.contains(tp) || Constants.DEFENCE_BUFF_TYPE_INC.contains(tp)
+					|| Constants.HIT_BUFF_TYPE_INC.contains(tp) || Constants.BLOCK_BUFF_TYPE_INC.contains(tp)){
+				rs+="<p>"+ss.toString()+"</p>";
+			}
+		}
+		rs+="</html>";
+		System.out.println("BUFF HTML="+rs);
+		return rs;
+	}
+	
+	public String getDebuffInfo(){
+		String rs="";
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.ATTACK_BUFF_TYPE_DEC.contains(tp) || Constants.DEFENCE_BUFF_TYPE_DEC.contains(tp)
+					|| Constants.HIT_BUFF_TYPE_DEC.contains(tp) || Constants.BLOCK_BUFF_TYPE_DEC.contains(tp)){
+				rs+=ss.toString();
+			}
+		}
+		return rs;
+	}	
+	
+	public String getDebuffInfoHTML(){
+		String rs="<html>";
+		for (SkillState ss:all_ss){
+			int tp=ss.type;
+			if (Constants.ATTACK_BUFF_TYPE_DEC.contains(tp) || Constants.DEFENCE_BUFF_TYPE_DEC.contains(tp)
+					|| Constants.HIT_BUFF_TYPE_DEC.contains(tp) || Constants.BLOCK_BUFF_TYPE_DEC.contains(tp)){
+				rs+="<p>"+ss.toString()+"</p>";
+			}
+		}
+		rs+="</html>";
+		System.out.println("DEBUFF HTML="+rs);
+		return rs;
+	}	
+	
+	
 	
 	
 }

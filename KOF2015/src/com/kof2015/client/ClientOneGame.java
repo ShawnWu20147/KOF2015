@@ -398,9 +398,13 @@ public class ClientOneGame implements Runnable{
 		boolean []res_pw=new boolean[6];
 		for (int i=0;i<6;i++){
 			
-			all_my_bp[i].attackButton.setEnabled(false);
+			res_atk[i]=all_my_bp[i].attackButton.isEnabled();	//修改了，原来可以攻击的,现在还可以攻击
 			
-			res_pw[i]=all_my_bp[i].skillButton.isEnabled();
+			all_my_bp[i].disableAttack();
+			
+			
+			
+			res_pw[i]=all_my_bp[i].skillButton.isEnabled();	//不错,原来可以放大招的,现在肯定还是可以的
 			
 			all_my_bp[i].disableSkill();
 			
@@ -417,7 +421,7 @@ public class ClientOneGame implements Runnable{
 		
 		
 		for (int i=0;i<6;i++){
-			if (all_my_bp[i].myfi.hp>0)
+			if (all_my_bp[i].myfi.hp>0 && res_atk[i])
 				all_my_bp[i].attackButton.setEnabled(true);
 			if (res_pw[i]){
 				System.out.println("有机会恢复:"+i);

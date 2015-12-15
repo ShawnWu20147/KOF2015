@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.ImageConsumer;
 import java.io.File;
 
 import javax.swing.BorderFactory;
@@ -22,6 +23,7 @@ import javax.swing.event.AncestorListener;
 
 import com.common.Constants;
 import com.common.FighterInstance;
+import com.common.SkillState;
 
 public class BattlerPanel extends JPanel {
 
@@ -56,6 +58,9 @@ public class BattlerPanel extends JPanel {
 	
 	public FighterInstance myfi;
 	
+	public  JLabel []stateLabel=new JLabel[4];
+	public ImageIcon []imageicon;
+	
 
 	
 	public void disableAll(){
@@ -86,6 +91,10 @@ public class BattlerPanel extends JPanel {
 	
 	public void enableFace(){
 		faceButton.setEnabled(true);
+	}
+	
+	public void setStateIcon(){
+		
 	}
 	
 	public void addAttackButtonListener(ActionListener l){
@@ -249,76 +258,38 @@ public class BattlerPanel extends JPanel {
 		JPanel statusPanel = new JPanel();
 		{
 			statusPanel.setLayout(new GridLayout(0, 1));
+			
+			imageicon=new ImageIcon[4];
+			
 			for (int i = 0; i < 4; i++)
 			{
-				final JLabel stateLabel = new JLabel();
-				stateLabel.setPreferredSize(new Dimension(24, 24));
-				
-				/*
-				if ( i < 3) {
-					ImageIcon image = new ImageIcon("img/state0" + ( 2 + i ) +".png");
-					stateLabel.setIcon(image);
-				}
-				*/
+				stateLabel[i] = new JLabel();
+				stateLabel[i].setPreferredSize(new Dimension(24, 24));
 				
 				
 				
-				if (i==0){
+				
+				
+				
+				
 					
-					String st_path="img/state00.png";
+					String st_path="img/state0"+i+".png";
 					File f=new File(st_path);
 					if (!f.exists())
-						st_path="../img/state00.png";
+						st_path="../img/state0"+i+".png";
 					
-					ImageIcon image = new ImageIcon(st_path);
+					imageicon[i]=new ImageIcon(st_path);
 					
-					stateLabel.setIcon(image);
-					statusPanel.add(stateLabel);
+				
+					stateLabel[i].setIcon(null);
+					statusPanel.add(stateLabel[i]);
 					
-					stateLabel.addMouseListener(new MouseListener() {
+					
+					
+					stateLabel[i].setToolTipText("");
 						
 					
 					
-					
-						@Override
-						public void mouseClicked(MouseEvent arg0) {
-							// TODO Auto-generated method stub
-							
-						}
-	
-						@Override
-						public void mouseEntered(MouseEvent e) {
-							// TODO Auto-generated method stub
-							
-						}
-	
-						@Override
-						public void mouseExited(MouseEvent e) {
-							// TODO Auto-generated method stub
-							
-						}
-	
-						@Override
-						public void mousePressed(MouseEvent e) {
-							// TODO Auto-generated method stub
-							
-						}
-	
-						@Override
-						public void mouseReleased(MouseEvent e) {
-							// TODO Auto-generated method stub
-							JFrame jf=new JFrame();
-							jf.setTitle("¸ñ¶·¼Ò¶îÍâ×´Ì¬");
-							jf.setLocationRelativeTo(stateLabel);
-							JTextArea jt=new JTextArea();
-							jt.setEditable(false);
-							jt.setText(myfi.getStateInfo());
-							jf.add(jt);
-							jf.setSize(400, 300);
-							jf.setVisible(true);
-						}
-					});
-				}
 				
 			}
 		}
@@ -455,6 +426,7 @@ public class BattlerPanel extends JPanel {
 	
 
 	public void enableMe() {
+		
 		enableAttack();
 		enableFace();
 		enableSkill();
@@ -464,6 +436,65 @@ public class BattlerPanel extends JPanel {
 	public void restoreRageEnabled() {
 		if (myfi.anger>=Constants.MAX_ANGER)
 			enableSkill();
+		
+	}
+
+	public void updateState() {
+		FighterInstance cur=myfi;
+		boolean isFaint=cur.isFaint();
+		boolean isSilent=cur.isSilent();
+		if (isSilent) disableSkill();
+		if (isFaint) disableAll();
+		if (cur.hp<=0){
+			for (int i=0;i<4;i++){
+				stateLabel[i].setIcon(null);
+			}
+			return;
+		}
+		
+		if (isFaint){
+			stateLabel[0].setIcon(imageicon[0]);
+			stateLabel[0].setToolTipText(cur.getFaintInfoHTML());
+		}
+		else{
+			stateLabel[0].setIcon(null);
+			stateLabel[0].setToolTipText("");
+		}
+		
+		if (isSilent){
+			stateLabel[1].setIcon(imageicon[1]);
+			stateLabel[1].setToolTipText(cur.getSilentInfoHTML());
+		}
+		else{
+			stateLabel[1].setIcon(null);
+			stateLabel[1].setToolTipText("");
+		}		
+		
+		String buff=cur.getBuffInfo();
+		String debuff=cur.getDebuffInfo();
+		System.out.println("print buff="+buff);
+		System.out.println("print debuff="+debuff);
+		
+		if (!buff.equals("")){
+			stateLabel[2].setIcon(imageicon[2]);
+			stateLabel[2].setToolTipText(cur.getBuffInfoHTML());
+		}
+		else{
+			stateLabel[2].setIcon(null);
+			stateLabel[2].setToolTipText("");
+		}
+		
+		if (!debuff.equals("")){
+			stateLabel[3].setIcon(imageicon[3]);
+			stateLabel[3].setToolTipText(cur.getDebuffInfoHTML());
+		}
+		else{
+			stateLabel[3].setIcon(null);
+			stateLabel[3].setToolTipText("");
+		}
+		
+		
+		
 		
 	}
 

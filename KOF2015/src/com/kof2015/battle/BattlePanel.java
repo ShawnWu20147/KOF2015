@@ -294,13 +294,15 @@ public class BattlePanel extends JPanel {
 			repaint();
 		}
 		else{
-			//hehe
+			//说明造成了伤害
 			if (who_atk==what_i){
 				my_p[atk_index].faceButton.setBorder(BorderFactory.createEtchedBorder(Color.RED, Color.RED));
 			}
 			else{
 				opp_p[atk_index].faceButton.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
 			}
+			
+			
 			
 			
 			Thread []t=new Thread[12];
@@ -323,6 +325,11 @@ public class BattlePanel extends JPanel {
 			}
 			else{
 				opp_p[atk_index].faceButton.setBorder(BorderFactory.createRaisedBevelBorder());
+			}
+			
+			for (int i=0;i<6;i++){
+					my_p[i].updateState();
+					opp_p[i].updateState();
 			}
 			
 			//over
