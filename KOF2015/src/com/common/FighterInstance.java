@@ -155,8 +155,8 @@ public class FighterInstance implements Serializable{
 		String angerS="怒气:"+anger+"/"+Constants.MAX_ANGER;
 		String attackS="攻击力:"+getActualAttack();
 		String defenceS="防御力:"+getActualDefence();
-		String hitS="暴击率:"+getActualHit();
-		String blockS="格挡率:"+getActualBlock();
+		String hitS="暴击率:"+getActualHit()+"%";
+		String blockS="格挡率:"+getActualBlock()+"%";
 		
 		String powerS="必杀技:["+skill_name+"]:"+skill_description;
 		String powerTypeS="必杀技类型:"+skill_type;

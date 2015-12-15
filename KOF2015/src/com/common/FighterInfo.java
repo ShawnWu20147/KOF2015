@@ -53,6 +53,8 @@ public class FighterInfo implements Serializable{
 			this.skill_state_description=skill_state_description;
 			this.skill_state_type=skill_state_type;
 			this.skill_state_ratio=skill_state_ratio;
+			
+		
 	}
 
 	private String getType(int i){

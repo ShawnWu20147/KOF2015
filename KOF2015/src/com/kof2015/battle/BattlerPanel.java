@@ -448,6 +448,7 @@ public class BattlerPanel extends JPanel {
 		if (cur.hp<=0){
 			for (int i=0;i<4;i++){
 				stateLabel[i].setIcon(null);
+				stateLabel[i].setToolTipText("");
 			}
 			return;
 		}
